@@ -1,0 +1,22 @@
+{
+  "java.project.sourcePaths": [
+    "src/main/java",
+    "src/test/java"
+  ],
+  "java.project.resourceFilters": [
+    "target"
+  ],
+  "java.import.exclusions": [
+    "**/target/**"
+  ],
+  "search.exclude": {
+    "**/target/**": true
+  },
+  "files.watcherExclude": {
+    "**/target/**": true
+  },
+  "java.project.explorer.exclude": {
+    "**/target/**": true
+  },
+  "java.configuration.updateBuildConfiguration": "disabled"
+}

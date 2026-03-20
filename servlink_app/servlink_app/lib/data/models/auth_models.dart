@@ -1,0 +1,69 @@
+class LoginRequestModel {
+  LoginRequestModel({
+    required this.email,
+    required this.senha,
+  });
+
+  final String email;
+  final String senha;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'email': email,
+      'senha': senha,
+    };
+  }
+}
+
+class RegisterRequestModel {
+  RegisterRequestModel({
+    required this.nome,
+    required this.email,
+    required this.telefone,
+    required this.senha,
+    required this.role,
+  });
+
+  final String nome;
+  final String email;
+  final String telefone;
+  final String senha;
+  final String role;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'nome': nome,
+      'email': email,
+      'telefone': telefone,
+      'senha': senha,
+      'role': role,
+    };
+  }
+}
+
+class LoginResponseModel {
+  LoginResponseModel({
+    required this.accessToken,
+    required this.tokenType,
+    required this.nome,
+    required this.email,
+    required this.role,
+  });
+
+  final String accessToken;
+  final String tokenType;
+  final String nome;
+  final String email;
+  final String role;
+
+  factory LoginResponseModel.fromJson(Map<String, dynamic> json) {
+    return LoginResponseModel(
+      accessToken: json['accessToken'] as String,
+      tokenType: json['tokenType'] as String,
+      nome: json['nome'] as String,
+      email: json['email'] as String,
+      role: json['role'] as String,
+    );
+  }
+}
+
