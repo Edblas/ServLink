@@ -8,6 +8,7 @@ class ProfissionalModel {
     required this.telefone,
     required this.descricao,
     required this.fotoUrl,
+    required this.bairro,
     required this.plano,
     required this.cidadeNome,
     required this.categoriaNome,
@@ -20,6 +21,7 @@ class ProfissionalModel {
   final String telefone;
   final String descricao;
   final String? fotoUrl;
+  final String? bairro;
   final String plano;
   final String cidadeNome;
   final String categoriaNome;
@@ -33,6 +35,7 @@ class ProfissionalModel {
       telefone: json['telefone'] as String,
       descricao: json['descricao'] as String,
       fotoUrl: json['fotoUrl'] as String?,
+      bairro: json['bairro'] as String?,
       plano: json['plano'] as String,
       cidadeNome: json['cidadeNome'] as String,
       categoriaNome: json['categoriaNome'] as String,
@@ -48,6 +51,7 @@ class ProfissionalModel {
       telefone: telefone,
       descricao: descricao,
       fotoUrl: fotoUrl,
+      bairro: bairro,
       plano: plano,
       cidade: cidadeNome,
       categoria: categoriaNome,

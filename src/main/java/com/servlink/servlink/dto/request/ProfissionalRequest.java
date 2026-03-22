@@ -18,6 +18,8 @@ public class ProfissionalRequest {
 
     private String fotoUrl;
 
+    private String bairro;
+
     @NotNull
     private Plano plano;
 

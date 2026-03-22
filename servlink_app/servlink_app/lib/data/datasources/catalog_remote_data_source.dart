@@ -23,6 +23,8 @@ class CatalogRemoteDataSource {
     required int size,
     int? cidadeId,
     int? categoriaId,
+    String? q,
+    String? bairro,
   }) async {
     final queryParameters = <String, dynamic>{
       'pagina': page,
@@ -33,6 +35,12 @@ class CatalogRemoteDataSource {
     }
     if (categoriaId != null) {
       queryParameters['categoriaId'] = categoriaId;
+    }
+    if (q != null && q.trim().isNotEmpty) {
+      queryParameters['q'] = q.trim();
+    }
+    if (bairro != null && bairro.trim().isNotEmpty) {
+      queryParameters['bairro'] = bairro.trim();
     }
     final response = await _dio.get(
       '/api/profissionais',

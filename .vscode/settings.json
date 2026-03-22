@@ -18,5 +18,5 @@
   "java.project.explorer.exclude": {
     "**/target/**": true
   },
-  "java.configuration.updateBuildConfiguration": "disabled"
+  "java.configuration.updateBuildConfiguration": "automatic"
 }

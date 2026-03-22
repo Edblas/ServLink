@@ -37,10 +37,12 @@ public class ProfissionalController {
     public ResponseEntity<Page<ProfissionalResponse>> buscar(
             @RequestParam(required = false) Long cidadeId,
             @RequestParam(required = false) Long categoriaId,
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String bairro,
             @RequestParam(defaultValue = "0") int pagina,
             @RequestParam(defaultValue = "20") int tamanho) {
 
-        Page<ProfissionalResponse> page = profissionalService.buscar(cidadeId, categoriaId, pagina, tamanho);
+        Page<ProfissionalResponse> page = profissionalService.buscar(cidadeId, categoriaId, q, bairro, pagina, tamanho);
         return ResponseEntity.ok(page);
     }
 

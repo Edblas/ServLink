@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/catalog_providers.dart';
@@ -14,20 +15,51 @@ class ProfessionalListPage extends ConsumerStatefulWidget {
 class _ProfessionalListPageState
     extends ConsumerState<ProfessionalListPage> {
   final _scrollController = ScrollController();
+  final _queryController = TextEditingController();
+  final _bairroController = TextEditingController();
   final List<int> _pagesLoaded = [0];
   int _currentPage = 0;
   bool _isLoadingMore = false;
+  Timer? _debounce;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    _queryController.text = ref.read(profissionaisQueryProvider);
+    _bairroController.text = ref.read(profissionaisBairroProvider);
+    _queryController.addListener(_onFiltersChanged);
+    _bairroController.addListener(_onFiltersChanged);
   }
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _scrollController.dispose();
+    _queryController.dispose();
+    _bairroController.dispose();
     super.dispose();
+  }
+
+  void _onFiltersChanged() {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 350), () {
+      if (!mounted) return;
+
+      ref.read(profissionaisQueryProvider.notifier).state = _queryController.text;
+      ref.read(profissionaisBairroProvider.notifier).state =
+          _bairroController.text;
+
+      setState(() {
+        _currentPage = 0;
+        _pagesLoaded
+          ..clear()
+          ..add(0);
+      });
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(0);
+      }
+    });
   }
 
   void _onScroll() {
@@ -79,6 +111,32 @@ class _ProfessionalListPageState
       ),
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: Column(
+              children: [
+                TextField(
+                  controller: _queryController,
+                  textInputAction: TextInputAction.search,
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.search),
+                    labelText: 'Buscar por nome ou categoria',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _bairroController,
+                  textInputAction: TextInputAction.search,
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.location_on_outlined),
+                    labelText: 'Bairro/Região (opcional)',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ],
+            ),
+          ),
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
@@ -91,7 +149,13 @@ class _ProfessionalListPageState
                   ),
                   title: Text(profissional.nome),
                   subtitle: Text(
-                    '${profissional.categoria} • ${profissional.cidade}',
+                    [
+                      profissional.categoria,
+                      profissional.cidade,
+                      if (profissional.bairro != null &&
+                          profissional.bairro!.trim().isNotEmpty)
+                        profissional.bairro!.trim(),
+                    ].join(' • '),
                   ),
                   trailing: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -141,4 +205,3 @@ class _ProfessionalListPageState
     );
   }
 }
-

@@ -9,5 +9,7 @@ abstract class CatalogRepository {
     required int size,
     int? cidadeId,
     int? categoriaId,
+    String? q,
+    String? bairro,
   });
 }

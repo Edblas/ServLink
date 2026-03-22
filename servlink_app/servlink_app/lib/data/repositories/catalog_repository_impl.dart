@@ -20,14 +20,17 @@ class CatalogRepositoryImpl implements CatalogRepository {
     required int size,
     int? cidadeId,
     int? categoriaId,
+    String? q,
+    String? bairro,
   }) async {
     final result = await _remote.listarProfissionais(
       page: page,
       size: size,
       cidadeId: cidadeId,
       categoriaId: categoriaId,
+      q: q,
+      bairro: bairro,
     );
     return result.map((e) => e.toEntity()).toList();
   }
 }
-

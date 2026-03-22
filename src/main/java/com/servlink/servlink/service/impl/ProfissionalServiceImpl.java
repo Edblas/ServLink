@@ -63,6 +63,7 @@ public class ProfissionalServiceImpl implements ProfissionalService {
         profissional.setUsuario(usuario);
         profissional.setDescricao(request.getDescricao());
         profissional.setFotoUrl(request.getFotoUrl());
+        profissional.setBairro(request.getBairro());
         profissional.setPlano(request.getPlano());
         profissional.setCidade(cidade);
         profissional.setCategoria(categoria);
@@ -74,14 +75,17 @@ public class ProfissionalServiceImpl implements ProfissionalService {
     }
 
     @Override
-    public Page<ProfissionalResponse> buscar(Long cidadeId, Long categoriaId, int pagina, int tamanho) {
+    public Page<ProfissionalResponse> buscar(Long cidadeId, Long categoriaId, String q, String bairro, int pagina, int tamanho) {
         Sort sort = Sort.by(
                 Sort.Order.desc("plano"),
                 Sort.Order.desc("mediaAvaliacoes"));
 
         Pageable pageable = PageRequest.of(pagina, tamanho, sort);
 
-        return profissionalRepository.search(cidadeId, categoriaId, pageable)
+        String query = q == null || q.isBlank() ? null : q.trim();
+        String bairroFiltro = bairro == null || bairro.isBlank() ? null : bairro.trim();
+
+        return profissionalRepository.search(cidadeId, categoriaId, query, bairroFiltro, pageable)
                 .map(profissionalMapper::toResponse);
     }
 }

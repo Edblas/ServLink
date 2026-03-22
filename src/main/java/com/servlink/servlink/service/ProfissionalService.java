@@ -11,6 +11,8 @@ public interface ProfissionalService {
     Page<ProfissionalResponse> buscar(
             Long cidadeId,
             Long categoriaId,
+            String q,
+            String bairro,
             int pagina,
             int tamanho);
 }

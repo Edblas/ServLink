@@ -38,15 +38,27 @@ final categoriaSelecionadaProvider = StateProvider<CategoriaEntity?>((ref) {
   return null;
 });
 
+final profissionaisQueryProvider = StateProvider<String>((ref) {
+  return '';
+});
+
+final profissionaisBairroProvider = StateProvider<String>((ref) {
+  return '';
+});
+
 final profissionaisProvider = FutureProvider.autoDispose
     .family<List<ProfissionalEntity>, int>((ref, page) async {
   final cidade = ref.watch(cidadeSelecionadaProvider);
   final categoria = ref.watch(categoriaSelecionadaProvider);
+  final query = ref.watch(profissionaisQueryProvider);
+  final bairro = ref.watch(profissionaisBairroProvider);
   final repository = ref.read(catalogRepositoryProvider);
   return repository.listarProfissionais(
     page: page,
     size: 20,
     cidadeId: cidade?.id,
     categoriaId: categoria?.id,
+    q: query,
+    bairro: bairro,
   );
 });

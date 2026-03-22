@@ -34,6 +34,9 @@ public class Profissional extends BaseEntity {
 
     private String fotoUrl;
 
+    @Column(length = 255)
+    private String bairro;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Plano plano;

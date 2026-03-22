@@ -6,6 +6,7 @@ class ProfissionalEntity {
     required this.telefone,
     required this.descricao,
     required this.fotoUrl,
+    required this.bairro,
     required this.plano,
     required this.cidade,
     required this.categoria,
@@ -18,9 +19,9 @@ class ProfissionalEntity {
   final String telefone;
   final String descricao;
   final String? fotoUrl;
+  final String? bairro;
   final String plano;
   final String cidade;
   final String categoria;
   final double mediaAvaliacoes;
 }
-
