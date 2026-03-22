@@ -21,6 +21,7 @@ public class ProfissionalResponse {
     private String telefone;
     private String descricao;
     private String fotoUrl;
+    private Integer anosExperiencia;
     private String bairro;
     private Plano plano;
     private Long cidadeId;

@@ -24,7 +24,32 @@ class _CitySelectionPageState extends ConsumerState<CitySelectionPage> {
       body: cidadesAsync.when(
         data: (cidades) {
           if (cidades.isEmpty) {
-            return const Center(child: Text('Nenhuma cidade cadastrada'));
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Nenhuma cidade cadastrada',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Isso normalmente indica que o servidor ainda não foi atualizado com as cidades iniciais.',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        ref.invalidate(cidadesProvider);
+                      },
+                      child: const Text('Tentar novamente'),
+                    ),
+                  ],
+                ),
+              ),
+            );
           }
           if (!_navigated && cidades.length == 1) {
             WidgetsBinding.instance.addPostFrameCallback((_) {

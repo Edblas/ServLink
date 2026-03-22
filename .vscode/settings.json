@@ -1,22 +1,16 @@
 {
-  "java.project.sourcePaths": [
-    "src/main/java",
-    "src/test/java"
-  ],
-  "java.project.resourceFilters": [
-    "target"
-  ],
-  "java.import.exclusions": [
-    "**/target/**"
-  ],
   "search.exclude": {
     "**/target/**": true
   },
   "files.watcherExclude": {
     "**/target/**": true
   },
+  "java.import.exclusions": [
+    "**/target/**"
+  ],
   "java.project.explorer.exclude": {
     "**/target/**": true
   },
+  "java.jdt.ls.lombokSupport.enabled": true,
   "java.configuration.updateBuildConfiguration": "automatic"
 }

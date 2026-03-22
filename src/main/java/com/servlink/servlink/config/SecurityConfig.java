@@ -71,7 +71,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,
                                 "/api/cidades/**",
                                 "/api/categorias/**",
-                                "/api/profissionais/**",
+                                "/api/profissionais",
+                                "/api/profissionais/*/avaliacoes",
                                 "/api/vagas/**")
                         .permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

@@ -18,6 +18,8 @@ public class ProfissionalRequest {
 
     private String fotoUrl;
 
+    private Integer anosExperiencia;
+
     private String bairro;
 
     @NotNull

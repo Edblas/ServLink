@@ -34,6 +34,8 @@ public class Profissional extends BaseEntity {
 
     private String fotoUrl;
 
+    private Integer anosExperiencia;
+
     @Column(length = 255)
     private String bairro;
 

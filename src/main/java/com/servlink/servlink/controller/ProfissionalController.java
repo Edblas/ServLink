@@ -1,6 +1,7 @@
 package com.servlink.servlink.controller;
 
 import com.servlink.servlink.dto.request.ProfissionalRequest;
+import com.servlink.servlink.dto.request.ProfissionalPerfilRequest;
 import com.servlink.servlink.dto.response.AvaliacaoResponse;
 import com.servlink.servlink.dto.response.ProfissionalResponse;
 import com.servlink.servlink.service.AvaliacaoService;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -44,6 +46,24 @@ public class ProfissionalController {
 
         Page<ProfissionalResponse> page = profissionalService.buscar(cidadeId, categoriaId, q, bairro, pagina, tamanho);
         return ResponseEntity.ok(page);
+    }
+
+    @PostMapping("/api/profissionais/me")
+    public ResponseEntity<ProfissionalResponse> criarOuObter() {
+        ProfissionalResponse response = profissionalService.criarOuObterProfissionalAtual();
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/api/profissionais/me")
+    public ResponseEntity<ProfissionalResponse> obter() {
+        ProfissionalResponse response = profissionalService.obterProfissionalAtual();
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/api/profissionais/me")
+    public ResponseEntity<ProfissionalResponse> atualizar(@Valid @RequestBody ProfissionalPerfilRequest request) {
+        ProfissionalResponse response = profissionalService.atualizarProfissionalAtual(request);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/api/profissionais/{profissionalId}/avaliacoes")

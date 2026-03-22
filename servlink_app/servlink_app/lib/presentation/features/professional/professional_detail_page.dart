@@ -42,6 +42,10 @@ class ProfessionalDetailPage extends ConsumerWidget {
                       ),
                       const SizedBox(height: 4),
                       Text('${profissional.categoria} • ${profissional.cidade}'),
+                      if (profissional.anosExperiencia != null) ...[
+                        const SizedBox(height: 4),
+                        Text('${profissional.anosExperiencia} anos de experiência'),
+                      ],
                       const SizedBox(height: 4),
                       Row(
                         children: [
@@ -193,4 +197,3 @@ class ProfessionalDetailPage extends ConsumerWidget {
     );
   }
 }
-

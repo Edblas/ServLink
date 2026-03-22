@@ -29,12 +29,9 @@ public class ServLinkApplication {
             UsuarioRepository usuarioRepository,
             PasswordEncoder passwordEncoder) {
         return args -> {
-            cidadeRepository.findByNomeIgnoreCaseAndEstadoIgnoreCase("Alfenas", "MG").orElseGet(() -> {
-                Cidade alfenas = new Cidade();
-                alfenas.setNome("Alfenas");
-                alfenas.setEstado("MG");
-                return cidadeRepository.save(alfenas);
-            });
+            seedCidade(cidadeRepository, "Alfenas", "MG");
+            seedCidade(cidadeRepository, "Belo Horizonte", "MG");
+            seedCidade(cidadeRepository, "São Paulo", "SP");
 
             if (categoriaRepository.count() == 0) {
                 Categoria eletricista = new Categoria();
@@ -59,5 +56,14 @@ public class ServLinkApplication {
                 return usuarioRepository.save(usuario);
             });
         };
+    }
+
+    private static Cidade seedCidade(CidadeRepository cidadeRepository, String nome, String estado) {
+        return cidadeRepository.findByNomeIgnoreCaseAndEstadoIgnoreCase(nome, estado).orElseGet(() -> {
+            Cidade cidade = new Cidade();
+            cidade.setNome(nome);
+            cidade.setEstado(estado);
+            return cidadeRepository.save(cidade);
+        });
     }
 }
