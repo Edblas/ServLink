@@ -4,6 +4,7 @@ import '../../providers/auth_providers.dart';
 import '../../providers/profissional_profile_providers.dart';
 import '../city/city_selection_page.dart';
 import '../profile/profile_page.dart';
+import '../settings/settings_page.dart';
 import 'register_page.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -69,45 +70,103 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Entrar'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SettingsPage()),
+              );
+            },
+            icon: const Icon(Icons.settings),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              TextFormField(
-                controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Informe o email';
-                  }
-                  return null;
-                },
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Bem-vindo de volta',
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Entre para encontrar profissionais, vagas e caronas.',
+                    style: TextStyle(
+                      color: Colors.black.withOpacity(0.6),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          TextFormField(
+                            controller: _emailController,
+                            decoration: const InputDecoration(
+                              labelText: 'Email',
+                              prefixIcon: Icon(Icons.email_outlined),
+                            ),
+                            keyboardType: TextInputType.emailAddress,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Informe o email';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _passwordController,
+                            decoration: const InputDecoration(
+                              labelText: 'Senha',
+                              prefixIcon: Icon(Icons.lock_outline),
+                            ),
+                            obscureText: true,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Informe a senha';
+                              }
+                              return null;
+                            },
+                          ),
+                          if (authState.errorMessage != null) ...[
+                            const SizedBox(height: 12),
+                            Text(
+                              authState.errorMessage!,
+                              style: const TextStyle(color: Colors.red),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 4),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const SettingsPage(),
+                                  ),
+                                );
+                              },
+                              child: const Text('Configurar servidor'),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _passwordController,
-                decoration: const InputDecoration(labelText: 'Senha'),
-                obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Informe a senha';
-                  }
-                  return null;
-                },
-              ),
-              if (authState.errorMessage != null) ...[
-                const SizedBox(height: 8),
-                Text(
-                  authState.errorMessage!,
-                  style: const TextStyle(color: Colors.red),
-                ),
-              ],
-            ],
+            ),
           ),
         ),
       ),

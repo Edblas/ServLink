@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
 import '../../core/network/dio_client.dart';
 import '../../core/storage/secure_storage_service.dart';
 import '../../data/datasources/auth_remote_data_source.dart';
@@ -58,7 +59,7 @@ class AuthController extends StateNotifier<AuthState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: 'Falha ao autenticar',
+        errorMessage: _mapAuthError(e, defaultMessage: 'Falha ao autenticar'),
       );
     }
   }
@@ -83,7 +84,7 @@ class AuthController extends StateNotifier<AuthState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: 'Falha ao registrar',
+        errorMessage: _mapAuthError(e, defaultMessage: 'Falha ao registrar'),
       );
     }
   }
@@ -94,9 +95,47 @@ class AuthController extends StateNotifier<AuthState> {
   }
 }
 
+String _mapAuthError(Object error, {required String defaultMessage}) {
+  if (error is DioException) {
+    final baseUrl = error.requestOptions.baseUrl;
+    final status = error.response?.statusCode;
+    if (status == 401 || status == 403) {
+      return 'Email ou senha inválidos';
+    }
+
+    if (status != null && status >= 400 && status < 500) {
+      final data = error.response?.data;
+      if (data is Map<String, dynamic>) {
+        final message = data['message'];
+        if (message is String && message.trim().isNotEmpty) {
+          return message.trim();
+        }
+        final errorText = data['error'];
+        if (errorText is String && errorText.trim().isNotEmpty) {
+          return errorText.trim();
+        }
+      }
+    }
+
+    if (error.type == DioExceptionType.connectionError ||
+        error.type == DioExceptionType.connectionTimeout ||
+        error.type == DioExceptionType.receiveTimeout ||
+        error.type == DioExceptionType.sendTimeout) {
+      if (baseUrl.trim().isEmpty) {
+        return 'Sem conexão com o servidor. Configure a API Base URL.';
+      }
+      return 'Sem conexão com o servidor ($baseUrl). Verifique a API Base URL.';
+    }
+
+    if (baseUrl.trim().isNotEmpty) {
+      return '$defaultMessage ($baseUrl)';
+    }
+  }
+  return defaultMessage;
+}
+
 final authControllerProvider =
     StateNotifierProvider<AuthController, AuthState>((ref) {
   final repository = ref.read(authRepositoryProvider);
   return AuthController(repository);
 });
-
