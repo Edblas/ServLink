@@ -19,6 +19,8 @@ class _CriarVagaPageState extends ConsumerState<CriarVagaPage> {
 
   DateTime? _dataTrabalho;
   int? _categoriaId;
+  String _urgencia = 'FLEXIVEL';
+  String _tipo = 'BICO';
 
   @override
   void dispose() {
@@ -74,6 +76,8 @@ class _CriarVagaPageState extends ConsumerState<CriarVagaPage> {
             valor: valor,
             cidadeId: cidade.id,
             dataTrabalho: data,
+            urgencia: _urgencia,
+            tipo: _tipo,
             categoriaId: categoriaId,
           );
       if (!mounted) return;
@@ -131,7 +135,8 @@ class _CriarVagaPageState extends ConsumerState<CriarVagaPage> {
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _valorController,
-                      decoration: const InputDecoration(labelText: 'Valor (R\$)'),
+                      decoration:
+                          const InputDecoration(labelText: 'Valor estimado (R\$)'),
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
                       validator: (value) {
@@ -142,6 +147,52 @@ class _CriarVagaPageState extends ConsumerState<CriarVagaPage> {
                           return 'Valor inválido';
                         }
                         return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      value: _urgencia,
+                      decoration: const InputDecoration(labelText: 'Urgência'),
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'HOJE',
+                          child: Text('Hoje'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'SEMANA',
+                          child: Text('Essa semana'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'FLEXIVEL',
+                          child: Text('Flexível'),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() {
+                          _urgencia = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      value: _tipo,
+                      decoration: const InputDecoration(labelText: 'Tipo'),
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'BICO',
+                          child: Text('Bico (temporário)'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'EMPREGO',
+                          child: Text('Emprego'),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() {
+                          _tipo = value;
+                        });
                       },
                     ),
                     const SizedBox(height: 16),

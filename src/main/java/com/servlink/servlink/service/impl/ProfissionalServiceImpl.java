@@ -70,6 +70,11 @@ public class ProfissionalServiceImpl implements ProfissionalService {
         profissional.setDescricao(request.getDescricao());
         profissional.setFotoUrl(request.getFotoUrl());
         profissional.setAnosExperiencia(request.getAnosExperiencia());
+        profissional.setIdade(request.getIdade());
+        profissional.setTipoPagamento(request.getTipoPagamento());
+        profissional.setInstagramUrl(request.getInstagramUrl());
+        profissional.setTiktokUrl(request.getTiktokUrl());
+        profissional.setSiteUrl(request.getSiteUrl());
         profissional.setBairro(request.getBairro());
         profissional.setPlano(request.getPlano());
         profissional.setCidade(cidade);
@@ -182,6 +187,29 @@ public class ProfissionalServiceImpl implements ProfissionalService {
             profissional.setAnosExperiencia(request.getAnosExperiencia());
         }
 
+        if (request.getIdade() != null) {
+            profissional.setIdade(request.getIdade());
+        }
+
+        if (request.getTipoPagamento() != null) {
+            profissional.setTipoPagamento(request.getTipoPagamento());
+        }
+
+        if (request.getInstagramUrl() != null) {
+            String instagramUrl = request.getInstagramUrl().trim();
+            profissional.setInstagramUrl(instagramUrl.isEmpty() ? null : instagramUrl);
+        }
+
+        if (request.getTiktokUrl() != null) {
+            String tiktokUrl = request.getTiktokUrl().trim();
+            profissional.setTiktokUrl(tiktokUrl.isEmpty() ? null : tiktokUrl);
+        }
+
+        if (request.getSiteUrl() != null) {
+            String siteUrl = request.getSiteUrl().trim();
+            profissional.setSiteUrl(siteUrl.isEmpty() ? null : siteUrl);
+        }
+
         if (request.getCidadeId() != null) {
             Cidade cidade = cidadeRepository.findById(request.getCidadeId())
                     .orElseThrow(() -> new IllegalArgumentException("Cidade não encontrada"));
@@ -201,8 +229,8 @@ public class ProfissionalServiceImpl implements ProfissionalService {
     @Override
     public Page<ProfissionalResponse> buscar(Long cidadeId, Long categoriaId, String q, String bairro, int pagina, int tamanho) {
         Sort sort = Sort.by(
-                Sort.Order.desc("plano"),
-                Sort.Order.desc("mediaAvaliacoes"));
+                Sort.Order.desc("mediaAvaliacoes").nullsLast(),
+                Sort.Order.desc("dataCriacao"));
 
         Pageable pageable = PageRequest.of(pagina, tamanho, sort);
 

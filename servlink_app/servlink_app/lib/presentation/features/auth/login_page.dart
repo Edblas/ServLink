@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_providers.dart';
+import '../../providers/profissional_profile_providers.dart';
 import '../city/city_selection_page.dart';
+import '../profile/profile_page.dart';
 import 'register_page.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -32,8 +34,30 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final state = ref.read(authControllerProvider);
     if (state.session != null) {
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(
+      final session = state.session!;
+      if (session.role == 'PROFISSIONAL') {
+        try {
+          final remote = ref.read(profissionalProfileRemoteProvider);
+          final model = await remote.criarOuObter();
+          final entity = model.toEntity();
+          if (!mounted) return;
+          if (!entity.isPerfilProfissionalCompleto) {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(
+                builder: (_) => const ProfilePage(isOnboarding: true),
+              ),
+              (route) => false,
+            );
+            return;
+          }
+        } catch (_) {
+          if (!mounted) return;
+        }
+      }
+
+      Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const CitySelectionPage()),
+        (route) => false,
       );
     }
   }
@@ -106,4 +130,3 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     );
   }
 }
-

@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/catalog_providers.dart';
+import '../../providers/favoritos_providers.dart';
+import '../../providers/whatsapp_providers.dart';
+import '../../widgets/professional_card.dart';
 import 'professional_detail_page.dart';
 
 class ProfessionalListPage extends ConsumerStatefulWidget {
@@ -85,10 +88,23 @@ class _ProfessionalListPageState
     });
   }
 
+  void _retry() {
+    setState(() {
+      _currentPage = 0;
+      _pagesLoaded
+        ..clear()
+        ..add(0);
+      _isLoadingMore = false;
+    });
+    ref.invalidate(profissionaisProvider(0));
+  }
+
   @override
   Widget build(BuildContext context) {
     final cidade = ref.watch(cidadeSelecionadaProvider);
     final categoria = ref.watch(categoriaSelecionadaProvider);
+    final favoritosAsync = ref.watch(favoritosControllerProvider);
+    final whatsAppService = ref.watch(whatsAppServiceProvider);
 
     final providers = _pagesLoaded
         .map((page) => ref.watch(profissionaisProvider(page)))
@@ -100,6 +116,7 @@ class _ProfessionalListPageState
         .toList();
 
     final isAnyLoading = providers.any((value) => value.isLoading);
+    final isAnyError = providers.any((value) => value.hasError);
 
     return Scaffold(
       appBar: AppBar(
@@ -138,57 +155,89 @@ class _ProfessionalListPageState
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              itemCount: items.length,
-              itemBuilder: (context, index) {
-                final profissional = items[index];
-                return ListTile(
-                  leading: CircleAvatar(
-                    child: Text(profissional.nome.substring(0, 1)),
-                  ),
-                  title: Text(profissional.nome),
-                  subtitle: Text(
-                    [
-                      profissional.categoria,
-                      profissional.cidade,
-                      if (profissional.bairro != null &&
-                          profissional.bairro!.trim().isNotEmpty)
-                        profissional.bairro!.trim(),
-                    ].join(' • '),
-                  ),
-                  trailing: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        profissional.plano == 'DESTAQUE'
-                            ? 'Destaque'
-                            : 'Básico',
-                        style: TextStyle(
-                          color: profissional.plano == 'DESTAQUE'
-                              ? Colors.orange
-                              : Colors.grey,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
+            child: Builder(
+              builder: (context) {
+                if (items.isEmpty && isAnyLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (items.isEmpty && isAnyError) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.star,
-                              size: 16, color: Colors.amber),
-                          const SizedBox(width: 4),
-                          Text(profissional.mediaAvaliacoes.toStringAsFixed(1)),
+                          const Text('Nenhum profissional encontrado'),
+                          const SizedBox(height: 12),
+                          ElevatedButton(
+                            onPressed: _retry,
+                            child: const Text('Tentar novamente'),
+                          ),
                         ],
                       ),
-                    ],
-                  ),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            ProfessionalDetailPage(profissional: profissional),
+                    ),
+                  );
+                }
+                if (items.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('Nenhum profissional encontrado'),
+                          const SizedBox(height: 12),
+                          ElevatedButton(
+                            onPressed: _retry,
+                            child: const Text('Tentar novamente'),
+                          ),
+                        ],
                       ),
+                    ),
+                  );
+                }
+
+                final favoritosSet = favoritosAsync.value
+                        ?.map((p) => p.id)
+                        .toSet() ??
+                    <int>{};
+
+                return ListView.builder(
+                  controller: _scrollController,
+                  itemCount: items.length,
+                  itemBuilder: (context, index) {
+                    final profissional = items[index];
+                    final isFavorito = favoritosSet.contains(profissional.id);
+                    final hasTelefone = profissional.telefone
+                        .trim()
+                        .replaceAll(RegExp(r'[^0-9]'), '')
+                        .isNotEmpty;
+                    return ProfessionalCard(
+                      profissional: profissional,
+                      isFavorite: isFavorito,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => ProfessionalDetailPage(
+                              profissional: profissional,
+                            ),
+                          ),
+                        );
+                      },
+                      onToggleFavorite: () async {
+                        await ref
+                            .read(favoritosControllerProvider.notifier)
+                            .toggle(profissional);
+                      },
+                      onWhatsApp: !hasTelefone
+                          ? null
+                          : () async {
+                              final link = whatsAppService.buildProfessionalLink(
+                                telefone: profissional.telefone,
+                                categoria: profissional.categoria,
+                              );
+                              await whatsAppService.open(link);
+                            },
                     );
                   },
                 );

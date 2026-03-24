@@ -30,6 +30,8 @@ class VagaRemoteDataSource {
     required int cidadeId,
     required DateTime dataTrabalho,
     required int categoriaId,
+    required String urgencia,
+    required String tipo,
   }) async {
     final date = '${dataTrabalho.year.toString().padLeft(4, '0')}-'
         '${dataTrabalho.month.toString().padLeft(2, '0')}-'
@@ -39,9 +41,11 @@ class VagaRemoteDataSource {
       data: {
         'titulo': titulo,
         'descricao': descricao,
-        'valor': valor,
+        'valor_estimado': valor,
         'cidadeId': cidadeId,
         'dataTrabalho': date,
+        'urgencia': urgencia,
+        'tipo': tipo,
         'categoriaId': categoriaId,
       },
     );

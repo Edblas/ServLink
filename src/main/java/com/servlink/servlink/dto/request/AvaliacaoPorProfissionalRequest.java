@@ -8,10 +8,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class AvaliacaoRequest {
-
-    @NotNull
-    private Long profissionalId;
+public class AvaliacaoPorProfissionalRequest {
 
     @NotNull
     @Min(1)
@@ -20,3 +17,4 @@ public class AvaliacaoRequest {
 
     private String comentario;
 }
+

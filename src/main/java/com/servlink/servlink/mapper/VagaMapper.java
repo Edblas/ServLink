@@ -10,6 +10,7 @@ public interface VagaMapper {
 
     @Mapping(target = "empresaId", source = "empresa.id")
     @Mapping(target = "empresaNome", source = "empresa.usuario.nome")
+    @Mapping(target = "empresaTelefone", source = "empresa.usuario.telefone")
     @Mapping(target = "cidadeId", source = "cidade.id")
     @Mapping(target = "cidadeNome", source = "cidade.nome")
     @Mapping(target = "categoriaId", source = "categoria.id")
@@ -17,4 +18,3 @@ public interface VagaMapper {
     @Mapping(target = "createdAt", source = "dataCriacao")
     VagaResponse toResponse(Vaga vaga);
 }
-

@@ -1,5 +1,7 @@
 package com.servlink.servlink.controller;
 
+import com.servlink.servlink.dto.request.AvaliacaoPorProfissionalRequest;
+import com.servlink.servlink.dto.request.AvaliacaoRequest;
 import com.servlink.servlink.dto.request.ProfissionalRequest;
 import com.servlink.servlink.dto.request.ProfissionalPerfilRequest;
 import com.servlink.servlink.dto.response.AvaliacaoResponse;
@@ -70,5 +72,19 @@ public class ProfissionalController {
     public ResponseEntity<List<AvaliacaoResponse>> listarAvaliacoes(@PathVariable Long profissionalId) {
         List<AvaliacaoResponse> avaliacoes = avaliacaoService.listarPorProfissional(profissionalId);
         return ResponseEntity.ok(avaliacoes);
+    }
+
+    @PostMapping("/api/profissionais/{profissionalId}/avaliacoes")
+    public ResponseEntity<AvaliacaoResponse> criarAvaliacao(
+            @PathVariable Long profissionalId,
+            @Valid @RequestBody AvaliacaoPorProfissionalRequest request) {
+
+        AvaliacaoRequest serviceRequest = new AvaliacaoRequest();
+        serviceRequest.setProfissionalId(profissionalId);
+        serviceRequest.setNota(request.getNota());
+        serviceRequest.setComentario(request.getComentario());
+
+        AvaliacaoResponse response = avaliacaoService.criar(serviceRequest);
+        return ResponseEntity.ok(response);
     }
 }

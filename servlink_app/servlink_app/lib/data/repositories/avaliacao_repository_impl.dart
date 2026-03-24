@@ -11,7 +11,7 @@ class AvaliacaoRepositoryImpl implements AvaliacaoRepository {
   Future<void> criarAvaliacao({
     required int profissionalId,
     required int nota,
-    required String comentario,
+    String? comentario,
   }) {
     return _remote.criarAvaliacao(
       profissionalId: profissionalId,

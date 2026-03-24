@@ -6,6 +6,8 @@ import com.servlink.servlink.domain.entity.Cliente;
 import com.servlink.servlink.domain.entity.Usuario;
 import com.servlink.servlink.domain.entity.Vaga;
 import com.servlink.servlink.domain.enums.VagaStatus;
+import com.servlink.servlink.domain.enums.VagaTipo;
+import com.servlink.servlink.domain.enums.VagaUrgencia;
 import com.servlink.servlink.dto.request.VagaRequest;
 import com.servlink.servlink.dto.response.VagaResponse;
 import com.servlink.servlink.mapper.VagaMapper;
@@ -67,6 +69,8 @@ public class VagaServiceImpl implements VagaService {
         vaga.setValor(request.getValor());
         vaga.setCidade(cidade);
         vaga.setDataTrabalho(request.getDataTrabalho());
+        vaga.setUrgencia(request.getUrgencia() == null ? VagaUrgencia.FLEXIVEL : request.getUrgencia());
+        vaga.setTipo(request.getTipo() == null ? VagaTipo.BICO : request.getTipo());
         vaga.setStatus(VagaStatus.ABERTA);
         vaga.setCategoria(categoria);
         vaga.setAtivo(true);
@@ -143,4 +147,3 @@ public class VagaServiceImpl implements VagaService {
         });
     }
 }
-

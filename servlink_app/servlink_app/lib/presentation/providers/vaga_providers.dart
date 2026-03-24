@@ -50,6 +50,8 @@ class VagaActionController extends StateNotifier<AsyncValue<void>> {
     required int cidadeId,
     required DateTime dataTrabalho,
     required int categoriaId,
+    required String urgencia,
+    required String tipo,
   }) async {
     state = const AsyncLoading();
     try {
@@ -60,6 +62,8 @@ class VagaActionController extends StateNotifier<AsyncValue<void>> {
         cidadeId: cidadeId,
         dataTrabalho: dataTrabalho,
         categoriaId: categoriaId,
+        urgencia: urgencia,
+        tipo: tipo,
       );
       state = const AsyncData(null);
       return vaga;

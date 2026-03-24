@@ -17,6 +17,10 @@ class DioClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
+          final baseUrl = await _storage.getApiBaseUrl();
+          if (baseUrl != null && baseUrl.trim().isNotEmpty) {
+            options.baseUrl = baseUrl.trim();
+          }
           final token = await _storage.getAccessToken();
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
@@ -30,4 +34,3 @@ class DioClient {
   late final Dio dio;
   final SecureStorageService _storage;
 }
-

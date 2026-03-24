@@ -1,6 +1,7 @@
 package com.servlink.servlink.dto.response;
 
 import com.servlink.servlink.domain.enums.Plano;
+import com.servlink.servlink.domain.enums.TipoPagamento;
 import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,6 +23,11 @@ public class ProfissionalResponse {
     private String descricao;
     private String fotoUrl;
     private Integer anosExperiencia;
+    private Integer idade;
+    private TipoPagamento tipoPagamento;
+    private String instagramUrl;
+    private String tiktokUrl;
+    private String siteUrl;
     private String bairro;
     private Plano plano;
     private Long cidadeId;

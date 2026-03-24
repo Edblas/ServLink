@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/vaga_providers.dart';
+import '../../providers/whatsapp_providers.dart';
 import 'candidatos_page.dart';
 
 class VagaDetailPage extends ConsumerWidget {
@@ -22,6 +23,7 @@ class VagaDetailPage extends ConsumerWidget {
     final authState = ref.watch(authControllerProvider);
     final role = authState.session?.role;
     final actionState = ref.watch(vagaActionControllerProvider);
+    final whatsAppService = ref.watch(whatsAppServiceProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -31,6 +33,17 @@ class VagaDetailPage extends ConsumerWidget {
         data: (vaga) {
           final canApply =
               role == 'PROFISSIONAL' && vaga.status == 'ABERTA' && !actionState.isLoading;
+          final hasTelefone =
+              vaga.empresaTelefone.trim().replaceAll(RegExp(r'[^0-9]'), '').isNotEmpty;
+          final urgenciaLabel = switch (vaga.urgencia) {
+            'HOJE' => 'Hoje',
+            'SEMANA' => 'Essa semana',
+            _ => 'Flexível',
+          };
+          final tipoLabel = switch (vaga.tipo) {
+            'EMPREGO' => 'Emprego',
+            _ => 'Bico (temporário)',
+          };
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
@@ -51,7 +64,11 @@ class VagaDetailPage extends ConsumerWidget {
                 const SizedBox(height: 4),
                 Text('Data: ${_formatDate(vaga.dataTrabalho)}'),
                 const SizedBox(height: 4),
-                Text('Valor: R\$ ${vaga.valor.toStringAsFixed(2)}'),
+                Text('Urgência: $urgenciaLabel'),
+                const SizedBox(height: 4),
+                Text('Tipo: $tipoLabel'),
+                const SizedBox(height: 4),
+                Text('Valor estimado: R\$ ${vaga.valor.toStringAsFixed(2)}'),
                 const SizedBox(height: 4),
                 Text('Status: ${vaga.status}'),
                 const SizedBox(height: 16),
@@ -74,6 +91,27 @@ class VagaDetailPage extends ConsumerWidget {
                     child: const Text('Ver candidatos'),
                   ),
                 if (role == 'CLIENTE') const SizedBox(height: 12),
+                OutlinedButton(
+                  onPressed: hasTelefone
+                      ? () async {
+                          final link = whatsAppService.buildClienteLink(
+                            telefone: vaga.empresaTelefone,
+                            mensagem: 'Olá, vi sua vaga no ServLink: ${vaga.titulo}',
+                          );
+                          final ok = await whatsAppService.open(link);
+                          if (!context.mounted) return;
+                          if (!ok) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Não foi possível abrir o WhatsApp'),
+                              ),
+                            );
+                          }
+                        }
+                      : null,
+                  child: const Text('Entrar em contato'),
+                ),
+                const SizedBox(height: 12),
                 if (role == 'PROFISSIONAL')
                   ElevatedButton(
                     onPressed: canApply

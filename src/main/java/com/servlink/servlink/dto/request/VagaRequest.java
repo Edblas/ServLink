@@ -1,5 +1,8 @@
 package com.servlink.servlink.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.servlink.servlink.domain.enums.VagaTipo;
+import com.servlink.servlink.domain.enums.VagaUrgencia;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -18,6 +21,7 @@ public class VagaRequest {
     private String descricao;
 
     @NotNull
+    @JsonAlias({"valor_estimado"})
     private BigDecimal valor;
 
     @NotNull
@@ -27,6 +31,10 @@ public class VagaRequest {
     private LocalDate dataTrabalho;
 
     @NotNull
+    private VagaUrgencia urgencia;
+
+    private VagaTipo tipo;
+
+    @NotNull
     private Long categoriaId;
 }
-

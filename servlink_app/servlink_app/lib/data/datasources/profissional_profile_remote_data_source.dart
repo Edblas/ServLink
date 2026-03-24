@@ -23,6 +23,11 @@ class ProfissionalProfileRemoteDataSource {
     String? descricao,
     String? fotoUrl,
     int? anosExperiencia,
+    int? idade,
+    String? tipoPagamento,
+    String? instagramUrl,
+    String? tiktokUrl,
+    String? siteUrl,
     String? bairro,
     int? cidadeId,
     int? categoriaId,
@@ -31,6 +36,11 @@ class ProfissionalProfileRemoteDataSource {
     if (descricao != null) data['descricao'] = descricao;
     if (fotoUrl != null) data['fotoUrl'] = fotoUrl;
     if (anosExperiencia != null) data['anosExperiencia'] = anosExperiencia;
+    if (idade != null) data['idade'] = idade;
+    if (tipoPagamento != null) data['tipoPagamento'] = tipoPagamento;
+    if (instagramUrl != null) data['instagramUrl'] = instagramUrl;
+    if (tiktokUrl != null) data['tiktokUrl'] = tiktokUrl;
+    if (siteUrl != null) data['siteUrl'] = siteUrl;
     if (bairro != null) data['bairro'] = bairro;
     if (cidadeId != null) data['cidadeId'] = cidadeId;
     if (categoriaId != null) data['categoriaId'] = categoriaId;

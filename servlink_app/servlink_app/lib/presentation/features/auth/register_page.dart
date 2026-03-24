@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_providers.dart';
+import '../../providers/catalog_providers.dart';
+import '../../providers/profissional_profile_providers.dart';
 import '../city/city_selection_page.dart';
+import '../profile/profile_page.dart';
 
 class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
@@ -16,7 +19,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _emailController = TextEditingController();
   final _telefoneController = TextEditingController();
   final _senhaController = TextEditingController();
+  final _descricaoController = TextEditingController();
+  final _anosExperienciaController = TextEditingController();
+  final _idadeController = TextEditingController();
+  final _bairroController = TextEditingController();
   String _role = 'CLIENTE';
+  int? _cidadeId;
+  int? _categoriaId;
+  String _tipoPagamento = 'DIARIA';
 
   @override
   void dispose() {
@@ -24,7 +34,17 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     _emailController.dispose();
     _telefoneController.dispose();
     _senhaController.dispose();
+    _descricaoController.dispose();
+    _anosExperienciaController.dispose();
+    _idadeController.dispose();
+    _bairroController.dispose();
     super.dispose();
+  }
+
+  int? _parseIntOrNull(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return null;
+    return int.tryParse(trimmed);
   }
 
   Future<void> _submit() async {
@@ -41,6 +61,32 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     );
     final state = ref.read(authControllerProvider);
     if (state.session != null) {
+      if (_role == 'PROFISSIONAL') {
+        final remote = ref.read(profissionalProfileRemoteProvider);
+        final updated = await remote.atualizar(
+          descricao: _descricaoController.text.trim().isEmpty
+              ? null
+              : _descricaoController.text.trim(),
+          anosExperiencia: _parseIntOrNull(_anosExperienciaController.text),
+          idade: _parseIntOrNull(_idadeController.text),
+          tipoPagamento: _tipoPagamento,
+          bairro:
+              _bairroController.text.trim().isEmpty ? null : _bairroController.text.trim(),
+          cidadeId: _cidadeId,
+          categoriaId: _categoriaId,
+        );
+        final entity = updated.toEntity();
+        if (!entity.isPerfilProfissionalCompleto) {
+          if (!mounted) return;
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (_) => const ProfilePage(isOnboarding: true),
+            ),
+            (route) => false,
+          );
+          return;
+        }
+      }
       if (!mounted) return;
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const CitySelectionPage()),
@@ -52,6 +98,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
+    final cidadesAsync = ref.watch(cidadesProvider);
+    final categoriasAsync = ref.watch(categoriasProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -131,6 +179,154 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   });
                 },
               ),
+              if (_role == 'PROFISSIONAL') ...[
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _descricaoController,
+                  decoration: const InputDecoration(
+                    labelText: 'Profissão / descrição',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 2,
+                  validator: (value) {
+                    if (_role != 'PROFISSIONAL') return null;
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Informe sua profissão';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _idadeController,
+                  decoration: const InputDecoration(
+                    labelText: 'Idade',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (_role != 'PROFISSIONAL') return null;
+                    final parsed = _parseIntOrNull(value ?? '');
+                    if (parsed == null) return 'Informe sua idade';
+                    if (parsed < 0) return 'Informe um valor válido';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _anosExperienciaController,
+                  decoration: const InputDecoration(
+                    labelText: 'Anos de experiência',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (_role != 'PROFISSIONAL') return null;
+                    final parsed = _parseIntOrNull(value ?? '');
+                    if (parsed == null) return null;
+                    if (parsed < 0) return 'Informe um valor válido';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: _tipoPagamento,
+                  decoration: const InputDecoration(
+                    labelText: 'Pagamento',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: const [
+                    DropdownMenuItem(
+                      value: 'DIARIA',
+                      child: Text('Diária'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'EMPREITA',
+                      child: Text('Empreita'),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value == null) return;
+                    setState(() {
+                      _tipoPagamento = value;
+                    });
+                  },
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _bairroController,
+                  decoration: const InputDecoration(
+                    labelText: 'Bairro/Região',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                cidadesAsync.when(
+                  data: (cidades) {
+                    return DropdownButtonFormField<int>(
+                      value: _cidadeId,
+                      decoration: const InputDecoration(
+                        labelText: 'Cidade',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: cidades
+                          .map(
+                            (c) => DropdownMenuItem(
+                              value: c.id,
+                              child: Text('${c.nome} - ${c.estado}'),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _cidadeId = value;
+                        });
+                      },
+                      validator: (value) {
+                        if (_role != 'PROFISSIONAL') return null;
+                        if (value == null) return 'Selecione sua cidade';
+                        return null;
+                      },
+                    );
+                  },
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (_, __) => const Text('Erro ao carregar cidades'),
+                ),
+                const SizedBox(height: 12),
+                categoriasAsync.when(
+                  data: (categorias) {
+                    return DropdownButtonFormField<int>(
+                      value: _categoriaId,
+                      decoration: const InputDecoration(
+                        labelText: 'Categoria',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: categorias
+                          .map(
+                            (c) => DropdownMenuItem(
+                              value: c.id,
+                              child: Text(c.nome),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _categoriaId = value;
+                        });
+                      },
+                      validator: (value) {
+                        if (_role != 'PROFISSIONAL') return null;
+                        if (value == null) return 'Selecione sua categoria';
+                        return null;
+                      },
+                    );
+                  },
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (_, __) => const Text('Erro ao carregar categorias'),
+                ),
+              ],
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: authState.isLoading ? null : _submit,
@@ -152,4 +348,3 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     );
   }
 }
-

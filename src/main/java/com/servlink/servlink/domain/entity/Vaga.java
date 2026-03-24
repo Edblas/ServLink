@@ -1,6 +1,8 @@
 package com.servlink.servlink.domain.entity;
 
 import com.servlink.servlink.domain.enums.VagaStatus;
+import com.servlink.servlink.domain.enums.VagaTipo;
+import com.servlink.servlink.domain.enums.VagaUrgencia;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -51,6 +53,14 @@ public class Vaga extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    private VagaUrgencia urgencia;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private VagaTipo tipo;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private VagaStatus status;
 
     @ManyToOne
@@ -58,4 +68,3 @@ public class Vaga extends BaseEntity {
     @NotNull
     private Categoria categoria;
 }
-

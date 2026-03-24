@@ -1,6 +1,7 @@
 package com.servlink.servlink.dto.request;
 
 import com.servlink.servlink.domain.enums.Plano;
+import com.servlink.servlink.domain.enums.TipoPagamento;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -19,6 +20,16 @@ public class ProfissionalRequest {
     private String fotoUrl;
 
     private Integer anosExperiencia;
+
+    private Integer idade;
+
+    private TipoPagamento tipoPagamento;
+
+    private String instagramUrl;
+
+    private String tiktokUrl;
+
+    private String siteUrl;
 
     private String bairro;
 

@@ -26,7 +26,7 @@ class AvaliacaoFormController extends StateNotifier<AsyncValue<void>> {
   Future<void> enviar({
     required int profissionalId,
     required int nota,
-    required String comentario,
+    String? comentario,
   }) async {
     state = const AsyncLoading();
     try {

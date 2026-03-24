@@ -9,6 +9,11 @@ class ProfissionalModel {
     required this.descricao,
     required this.fotoUrl,
     required this.anosExperiencia,
+    required this.idade,
+    required this.tipoPagamento,
+    required this.instagramUrl,
+    required this.tiktokUrl,
+    required this.siteUrl,
     required this.bairro,
     required this.plano,
     required this.cidadeId,
@@ -25,6 +30,11 @@ class ProfissionalModel {
   final String descricao;
   final String? fotoUrl;
   final int? anosExperiencia;
+  final int? idade;
+  final String? tipoPagamento;
+  final String? instagramUrl;
+  final String? tiktokUrl;
+  final String? siteUrl;
   final String? bairro;
   final String plano;
   final int? cidadeId;
@@ -42,6 +52,11 @@ class ProfissionalModel {
       descricao: json['descricao'] as String,
       fotoUrl: json['fotoUrl'] as String?,
       anosExperiencia: json['anosExperiencia'] as int?,
+      idade: json['idade'] as int?,
+      tipoPagamento: json['tipoPagamento'] as String?,
+      instagramUrl: json['instagramUrl'] as String?,
+      tiktokUrl: json['tiktokUrl'] as String?,
+      siteUrl: json['siteUrl'] as String?,
       bairro: json['bairro'] as String?,
       plano: json['plano'] as String,
       cidadeId: json['cidadeId'] as int?,
@@ -61,6 +76,11 @@ class ProfissionalModel {
       descricao: descricao,
       fotoUrl: fotoUrl,
       anosExperiencia: anosExperiencia,
+      idade: idade,
+      tipoPagamento: tipoPagamento,
+      instagramUrl: instagramUrl,
+      tiktokUrl: tiktokUrl,
+      siteUrl: siteUrl,
       bairro: bairro,
       plano: plano,
       cidadeId: cidadeId,

@@ -28,6 +28,8 @@ class VagaRepositoryImpl implements VagaRepository {
     required int cidadeId,
     required DateTime dataTrabalho,
     required int categoriaId,
+    required String urgencia,
+    required String tipo,
   }) async {
     final result = await _remote.criarVaga(
       titulo: titulo,
@@ -36,6 +38,8 @@ class VagaRepositoryImpl implements VagaRepository {
       cidadeId: cidadeId,
       dataTrabalho: dataTrabalho,
       categoriaId: categoriaId,
+      urgencia: urgencia,
+      tipo: tipo,
     );
     return result.toEntity();
   }

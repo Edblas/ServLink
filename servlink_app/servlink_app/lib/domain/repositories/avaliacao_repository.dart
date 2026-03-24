@@ -4,7 +4,7 @@ abstract class AvaliacaoRepository {
   Future<void> criarAvaliacao({
     required int profissionalId,
     required int nota,
-    required String comentario,
+    String? comentario,
   });
 
   Future<List<AvaliacaoEntity>> listarAvaliacoesPorProfissional(int profissionalId);

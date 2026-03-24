@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/catalog_providers.dart';
+import '../favorites/favorites_page.dart';
 import '../profile/profile_page.dart';
 import '../professional/professional_dashboard_page.dart';
 import '../professional/professional_list_page.dart';
+import '../settings/settings_page.dart';
 import '../vagas/vagas_page.dart';
 
 class HomePage extends ConsumerWidget {
@@ -29,6 +31,22 @@ class HomePage extends ConsumerWidget {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const VagasPage()),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.favorite_border),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const FavoritesPage()),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SettingsPage()),
               );
             },
           ),

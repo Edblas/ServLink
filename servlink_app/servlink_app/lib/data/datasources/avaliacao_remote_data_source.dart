@@ -12,14 +12,14 @@ class AvaliacaoRemoteDataSource {
   Future<void> criarAvaliacao({
     required int profissionalId,
     required int nota,
-    required String comentario,
+    String? comentario,
   }) async {
     await _dio.post(
-      '/api/avaliacoes',
+      '/api/profissionais/$profissionalId/avaliacoes',
       data: {
-        'profissionalId': profissionalId,
         'nota': nota,
-        'comentario': comentario,
+        if (comentario != null && comentario.trim().isNotEmpty)
+          'comentario': comentario.trim(),
       },
     );
   }

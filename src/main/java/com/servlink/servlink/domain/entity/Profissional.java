@@ -1,6 +1,7 @@
 package com.servlink.servlink.domain.entity;
 
 import com.servlink.servlink.domain.enums.Plano;
+import com.servlink.servlink.domain.enums.TipoPagamento;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -35,6 +36,21 @@ public class Profissional extends BaseEntity {
     private String fotoUrl;
 
     private Integer anosExperiencia;
+
+    private Integer idade;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private TipoPagamento tipoPagamento;
+
+    @Column(name = "instagram_url", length = 255)
+    private String instagramUrl;
+
+    @Column(name = "tiktok_url", length = 255)
+    private String tiktokUrl;
+
+    @Column(name = "site_url", length = 255)
+    private String siteUrl;
 
     @Column(length = 255)
     private String bairro;

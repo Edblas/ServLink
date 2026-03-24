@@ -13,6 +13,8 @@ abstract class VagaRepository {
     required int cidadeId,
     required DateTime dataTrabalho,
     required int categoriaId,
+    required String urgencia,
+    required String tipo,
   });
 
   Future<void> candidatar(int vagaId);
