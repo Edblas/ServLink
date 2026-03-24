@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/catalog_providers.dart';
 import '../../providers/profissional_profile_providers.dart';
@@ -28,6 +29,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
   bool _formInitialized = false;
   bool _saving = false;
+  bool _uploadingPhoto = false;
 
   int? _cidadeId;
   int? _categoriaId;
@@ -293,6 +295,44 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                   labelText: 'Instagram (link ou @)',
                   border: OutlineInputBorder(),
                 ),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: _uploadingPhoto
+                    ? null
+                    : () async {
+                        final picker = ImagePicker();
+                        final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+                        if (picked == null) return;
+                        setState(() {
+                          _uploadingPhoto = true;
+                        });
+                        try {
+                          final remote = ref.read(profissionalProfileRemoteProvider);
+                          final updated = await remote.uploadFoto(picked.path);
+                          ref.invalidate(profissionalMeProvider);
+                          if (mounted) {
+                            _fotoUrlController.text = updated.fotoUrl ?? '';
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Foto atualizada')),
+                            );
+                          }
+                        } catch (_) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Falha ao enviar foto')),
+                            );
+                          }
+                        } finally {
+                          if (mounted) {
+                            setState(() {
+                              _uploadingPhoto = false;
+                            });
+                          }
+                        }
+                      },
+                icon: const Icon(Icons.photo),
+                label: _uploadingPhoto ? const Text('Enviando...') : const Text('Enviar foto da galeria'),
               ),
               const SizedBox(height: 12),
               TextFormField(

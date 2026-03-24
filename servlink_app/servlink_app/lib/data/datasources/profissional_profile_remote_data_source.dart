@@ -51,4 +51,16 @@ class ProfissionalProfileRemoteDataSource {
     );
     return ProfissionalModel.fromJson(response.data as Map<String, dynamic>);
   }
+
+  Future<ProfissionalModel> uploadFoto(String filePath) async {
+    final formData = FormData.fromMap({
+      'file': await MultipartFile.fromFile(filePath, filename: filePath.split('/').last.split('\\').last),
+    });
+    final response = await _dio.post(
+      '/api/profissionais/me/foto',
+      data: formData,
+      options: Options(contentType: 'multipart/form-data'),
+    );
+    return ProfissionalModel.fromJson(response.data as Map<String, dynamic>);
+  }
 }

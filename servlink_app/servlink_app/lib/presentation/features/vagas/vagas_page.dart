@@ -37,7 +37,7 @@ class VagasPage extends ConsumerWidget {
             ],
           ),
         ),
-        floatingActionButton: role == 'CLIENTE'
+        floatingActionButton: role == 'CLIENTE' || role == 'PROFISSIONAL'
             ? FloatingActionButton(
                 onPressed: () async {
                   await Navigator.of(context).push(

@@ -23,7 +23,7 @@ public class VagaController {
     }
 
     @PostMapping("/api/vagas")
-    @PreAuthorize("hasRole('CLIENTE')")
+    @PreAuthorize("hasAnyRole('CLIENTE','PROFISSIONAL')")
     public ResponseEntity<VagaResponse> criar(@Valid @RequestBody VagaRequest request) {
         VagaResponse response = vagaService.criar(request);
         return ResponseEntity.ok(response);
@@ -40,9 +40,8 @@ public class VagaController {
     }
 
     @GetMapping("/api/empresas/{empresaId}/vagas")
-    @PreAuthorize("hasRole('CLIENTE')")
+    @PreAuthorize("hasAnyRole('CLIENTE','PROFISSIONAL')")
     public ResponseEntity<List<VagaResponse>> listarPorEmpresa(@PathVariable Long empresaId) {
         return ResponseEntity.ok(vagaService.listarPorEmpresa(empresaId));
     }
 }
-

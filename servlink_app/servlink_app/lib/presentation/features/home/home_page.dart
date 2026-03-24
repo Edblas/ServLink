@@ -8,6 +8,7 @@ import '../professional/professional_dashboard_page.dart';
 import '../professional/professional_list_page.dart';
 import '../settings/settings_page.dart';
 import '../vagas/vagas_page.dart';
+import '../caronas/caronas_page.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -31,6 +32,14 @@ class HomePage extends ConsumerWidget {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const VagasPage()),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.directions_car),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const CaronasPage()),
               );
             },
           ),

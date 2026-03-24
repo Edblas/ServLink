@@ -1,4 +1,4 @@
-package com.example.servlink_app
+package com.servlink.app
 
 import io.flutter.embedding.android.FlutterActivity
 

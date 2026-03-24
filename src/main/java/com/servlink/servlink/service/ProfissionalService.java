@@ -22,4 +22,6 @@ public interface ProfissionalService {
             String bairro,
             int pagina,
             int tamanho);
+
+    ProfissionalResponse atualizarFotoAtual(org.springframework.web.multipart.MultipartFile file);
 }

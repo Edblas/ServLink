@@ -111,7 +111,8 @@ public class VagaServiceImpl implements VagaService {
         if (principal instanceof UserDetails userDetails) {
             Usuario usuario = usuarioRepository.findByEmail(userDetails.getUsername())
                     .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
-            if (usuario.getRole() != com.servlink.servlink.domain.enums.Role.CLIENTE) {
+            if (usuario.getRole() != com.servlink.servlink.domain.enums.Role.CLIENTE
+                    && usuario.getRole() != com.servlink.servlink.domain.enums.Role.PROFISSIONAL) {
                 throw new AccessDeniedException("Acesso negado");
             }
         }
@@ -136,8 +137,9 @@ public class VagaServiceImpl implements VagaService {
             Usuario usuario = usuarioRepository.findByEmail(email)
                     .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
 
-            if (usuario.getRole() != com.servlink.servlink.domain.enums.Role.CLIENTE) {
-                throw new AccessDeniedException("Apenas CLIENTE pode criar vaga");
+            if (usuario.getRole() != com.servlink.servlink.domain.enums.Role.CLIENTE
+                    && usuario.getRole() != com.servlink.servlink.domain.enums.Role.PROFISSIONAL) {
+                throw new AccessDeniedException("Apenas CLIENTE ou PROFISSIONAL pode criar vaga");
             }
 
             Cliente cliente = new Cliente();

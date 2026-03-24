@@ -26,6 +26,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Service
 public class ProfissionalServiceImpl implements ProfissionalService {
@@ -239,5 +247,42 @@ public class ProfissionalServiceImpl implements ProfissionalService {
 
         return profissionalRepository.search(cidadeId, categoriaId, query, bairroFiltro, pageable)
                 .map(profissionalMapper::toResponse);
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize("hasRole('PROFISSIONAL')")
+    public ProfissionalResponse atualizarFotoAtual(MultipartFile file) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("Usuário não autenticado");
+        }
+        String email = authentication.getName();
+        Profissional profissional = profissionalRepository.findByUsuarioEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Profissional não encontrado"));
+
+        String uploadsDir = "uploads/profissionais";
+        Path dir = Paths.get(uploadsDir);
+        try {
+            Files.createDirectories(dir);
+        } catch (IOException e) {
+            throw new IllegalStateException("Falha ao preparar diretório de uploads");
+        }
+
+        String original = file.getOriginalFilename();
+        String ext = original != null && original.contains(".") ? original.substring(original.lastIndexOf('.')) : ".jpg";
+        String timestamp = DateTimeFormatter.ofPattern("yyyyMMddHHmmss").format(LocalDateTime.now());
+        String filename = "profissional-" + profissional.getId() + "-" + timestamp + ext.toLowerCase();
+        Path target = dir.resolve(filename);
+        try {
+            file.transferTo(target.toFile());
+        } catch (IOException e) {
+            throw new IllegalStateException("Falha ao salvar arquivo");
+        }
+
+        String url = "/uploads/profissionais/" + filename;
+        profissional.setFotoUrl(url);
+        Profissional salvo = profissionalRepository.save(profissional);
+        return profissionalMapper.toResponse(salvo);
     }
 }
