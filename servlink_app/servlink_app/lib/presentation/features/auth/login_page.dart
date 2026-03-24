@@ -30,7 +30,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       return;
     }
     final auth = ref.read(authControllerProvider.notifier);
-    await auth.login(_emailController.text.trim(), _passwordController.text);
+    await auth.login(_emailController.text.trim().toLowerCase(), _passwordController.text);
     final state = ref.read(authControllerProvider);
     if (state.session != null) {
       if (!mounted) return;

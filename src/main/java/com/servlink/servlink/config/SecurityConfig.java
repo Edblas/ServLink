@@ -32,7 +32,8 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> usuarioRepository.findByEmail(username)
+        return username -> usuarioRepository.findAllByEmailNormalized(username).stream()
+                .findFirst()
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
     }
 

@@ -54,7 +54,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     final auth = ref.read(authControllerProvider.notifier);
     await auth.register(
       nome: _nomeController.text.trim(),
-      email: _emailController.text.trim(),
+      email: _emailController.text.trim().toLowerCase(),
       telefone: _telefoneController.text.trim(),
       senha: _senhaController.text,
       role: _role,
