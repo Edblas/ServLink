@@ -70,7 +70,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       appBar: AppBar(
         title: const Text('Entrar'),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
@@ -100,7 +100,24 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   return null;
                 },
               ),
-              const SizedBox(height: 24),
+              if (authState.errorMessage != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  authState.errorMessage!,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
               ElevatedButton(
                 onPressed: authState.isLoading ? null : _submit,
                 child: authState.isLoading
@@ -116,13 +133,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 },
                 child: const Text('Criar conta'),
               ),
-              if (authState.errorMessage != null) ...[
-                const SizedBox(height: 8),
-                Text(
-                  authState.errorMessage!,
-                  style: const TextStyle(color: Colors.red),
-                ),
-              ],
             ],
           ),
         ),

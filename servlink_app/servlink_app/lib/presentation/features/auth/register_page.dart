@@ -327,13 +327,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   error: (_, __) => const Text('Erro ao carregar categorias'),
                 ),
               ],
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: authState.isLoading ? null : _submit,
-                child: authState.isLoading
-                    ? const CircularProgressIndicator()
-                    : const Text('Cadastrar'),
-              ),
               if (authState.errorMessage != null) ...[
                 const SizedBox(height: 8),
                 Text(
@@ -341,6 +334,23 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   style: const TextStyle(color: Colors.red),
                 ),
               ],
+            ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ElevatedButton(
+                onPressed: authState.isLoading ? null : _submit,
+                child: authState.isLoading
+                    ? const CircularProgressIndicator()
+                    : const Text('Cadastrar'),
+              ),
             ],
           ),
         ),
