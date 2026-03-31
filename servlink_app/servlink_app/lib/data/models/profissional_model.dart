@@ -15,6 +15,7 @@ class ProfissionalModel {
     required this.tiktokUrl,
     required this.siteUrl,
     required this.bairro,
+    required this.carteiraMotorista,
     required this.plano,
     required this.cidadeId,
     required this.cidadeNome,
@@ -36,6 +37,7 @@ class ProfissionalModel {
   final String? tiktokUrl;
   final String? siteUrl;
   final String? bairro;
+  final bool? carteiraMotorista;
   final String plano;
   final int? cidadeId;
   final String cidadeNome;
@@ -58,6 +60,7 @@ class ProfissionalModel {
       tiktokUrl: json['tiktokUrl'] as String?,
       siteUrl: json['siteUrl'] as String?,
       bairro: json['bairro'] as String?,
+      carteiraMotorista: json['carteiraMotorista'] as bool?,
       plano: json['plano'] as String,
       cidadeId: json['cidadeId'] as int?,
       cidadeNome: json['cidadeNome'] as String,
@@ -82,6 +85,7 @@ class ProfissionalModel {
       tiktokUrl: tiktokUrl,
       siteUrl: siteUrl,
       bairro: bairro,
+      carteiraMotorista: carteiraMotorista ?? false,
       plano: plano,
       cidadeId: cidadeId,
       cidade: cidadeNome,

@@ -29,6 +29,7 @@ public class ProfissionalResponse {
     private String tiktokUrl;
     private String siteUrl;
     private String bairro;
+    private Boolean carteiraMotorista;
     private Plano plano;
     private Long cidadeId;
     private String cidadeNome;

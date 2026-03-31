@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import '../../core/network/dio_client.dart';
@@ -93,6 +94,19 @@ class AuthController extends StateNotifier<AuthState> {
     await _repository.logout();
     state = AuthState();
   }
+
+  void updateSession({String? nome, String? email, String? role}) {
+    final current = state.session;
+    if (current == null) return;
+    state = state.copyWith(
+      session: AuthSession(
+        accessToken: current.accessToken,
+        nome: nome ?? current.nome,
+        email: email ?? current.email,
+        role: role ?? current.role,
+      ),
+    );
+  }
 }
 
 String _mapAuthError(Object error, {required String defaultMessage}) {
@@ -101,6 +115,16 @@ String _mapAuthError(Object error, {required String defaultMessage}) {
     final status = error.response?.statusCode;
     if (status == 401 || status == 403) {
       return 'Email ou senha inválidos';
+    }
+
+    if (error.type == DioExceptionType.badCertificate ||
+        error.error is HandshakeException ||
+        (error.error?.toString().toLowerCase().contains('certificate') ??
+            false)) {
+      if (baseUrl.trim().isNotEmpty) {
+        return 'Falha HTTPS (certificado) em $baseUrl';
+      }
+      return 'Falha HTTPS (certificado)';
     }
 
     if (status != null && status >= 400 && status < 500) {
@@ -122,9 +146,9 @@ String _mapAuthError(Object error, {required String defaultMessage}) {
         error.type == DioExceptionType.receiveTimeout ||
         error.type == DioExceptionType.sendTimeout) {
       if (baseUrl.trim().isEmpty) {
-        return 'Sem conexão com o servidor. Configure a API Base URL.';
+        return 'Sem conexão com o servidor. Verifique sua internet.';
       }
-      return 'Sem conexão com o servidor ($baseUrl). Verifique a API Base URL.';
+      return 'Sem conexão com o servidor ($baseUrl). Verifique sua internet.';
     }
 
     if (baseUrl.trim().isNotEmpty) {

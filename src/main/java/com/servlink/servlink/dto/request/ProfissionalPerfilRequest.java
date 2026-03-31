@@ -9,6 +9,10 @@ import lombok.Setter;
 @Setter
 public class ProfissionalPerfilRequest {
 
+    private String nome;
+
+    private String telefone;
+
     private String descricao;
 
     private String fotoUrl;
@@ -28,6 +32,8 @@ public class ProfissionalPerfilRequest {
     private String siteUrl;
 
     private String bairro;
+
+    private Boolean carteiraMotorista;
 
     private Long cidadeId;
 

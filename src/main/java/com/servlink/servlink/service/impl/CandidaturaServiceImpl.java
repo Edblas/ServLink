@@ -82,9 +82,14 @@ public class CandidaturaServiceImpl implements CandidaturaService {
 
     @Override
     public List<CandidaturaResponse> listarCandidatosDaVaga(Long vagaId) {
-        Usuario usuario = getUsuarioAtual(Role.CLIENTE);
+        Usuario usuario = getUsuarioAtual(Role.CLIENTE, Role.PROFISSIONAL);
         Cliente cliente = clienteRepository.findByUsuarioEmail(usuario.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
+                .orElseGet(() -> {
+                    Cliente novo = new Cliente();
+                    novo.setUsuario(usuario);
+                    novo.setAtivo(true);
+                    return clienteRepository.save(novo);
+                });
 
         Vaga vaga = vagaRepository.findById(vagaId)
                 .orElseThrow(() -> new IllegalArgumentException("Vaga não encontrada"));
@@ -116,9 +121,14 @@ public class CandidaturaServiceImpl implements CandidaturaService {
     @Override
     @Transactional
     public CandidaturaResponse atualizarStatus(Long candidaturaId, CandidaturaStatus status) {
-        Usuario usuario = getUsuarioAtual(Role.CLIENTE);
+        Usuario usuario = getUsuarioAtual(Role.CLIENTE, Role.PROFISSIONAL);
         Cliente cliente = clienteRepository.findByUsuarioEmail(usuario.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
+                .orElseGet(() -> {
+                    Cliente novo = new Cliente();
+                    novo.setUsuario(usuario);
+                    novo.setAtivo(true);
+                    return clienteRepository.save(novo);
+                });
 
         Candidatura candidatura = candidaturaRepository.findById(candidaturaId)
                 .orElseThrow(() -> new IllegalArgumentException("Candidatura não encontrada"));
@@ -149,7 +159,7 @@ public class CandidaturaServiceImpl implements CandidaturaService {
         return candidaturaMapper.toResponse(salva);
     }
 
-    private Usuario getUsuarioAtual(Role requiredRole) {
+    private Usuario getUsuarioAtual(Role... allowedRoles) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new IllegalStateException("Usuário não autenticado");
@@ -159,7 +169,14 @@ public class CandidaturaServiceImpl implements CandidaturaService {
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
 
-        if (usuario.getRole() != requiredRole) {
+        boolean allowed = false;
+        for (Role role : allowedRoles) {
+            if (usuario.getRole() == role) {
+                allowed = true;
+                break;
+            }
+        }
+        if (!allowed) {
             throw new AccessDeniedException("Acesso negado");
         }
 

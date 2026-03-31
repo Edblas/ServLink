@@ -30,7 +30,7 @@ public class CandidaturaController {
     }
 
     @GetMapping("/api/vagas/{vagaId}/candidatos")
-    @PreAuthorize("hasRole('CLIENTE')")
+    @PreAuthorize("hasAnyRole('CLIENTE','PROFISSIONAL')")
     public ResponseEntity<List<CandidaturaResponse>> listarCandidatos(@PathVariable Long vagaId) {
         return ResponseEntity.ok(candidaturaService.listarCandidatosDaVaga(vagaId));
     }
@@ -42,7 +42,7 @@ public class CandidaturaController {
     }
 
     @PatchMapping("/api/candidaturas/{id}/status")
-    @PreAuthorize("hasRole('CLIENTE')")
+    @PreAuthorize("hasAnyRole('CLIENTE','PROFISSIONAL')")
     public ResponseEntity<CandidaturaResponse> atualizarStatus(
             @PathVariable Long id, @Valid @RequestBody AtualizarStatusCandidaturaRequest request) {
         return ResponseEntity.ok(candidaturaService.atualizarStatus(id, request.getStatus()));

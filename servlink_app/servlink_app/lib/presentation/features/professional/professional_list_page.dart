@@ -126,130 +126,134 @@ class _ProfessionalListPageState
               : 'Profissionais',
         ),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: Column(
-              children: [
-                TextField(
-                  controller: _queryController,
-                  textInputAction: TextInputAction.search,
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.search),
-                    labelText: 'Buscar por nome ou categoria',
-                    border: OutlineInputBorder(),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        TextField(
+                          controller: _queryController,
+                          textInputAction: TextInputAction.search,
+                          decoration: const InputDecoration(
+                            prefixIcon: Icon(Icons.search),
+                            labelText: 'Buscar por nome ou categoria',
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _bairroController,
+                          textInputAction: TextInputAction.search,
+                          decoration: const InputDecoration(
+                            prefixIcon: Icon(Icons.location_on_outlined),
+                            labelText: 'Bairro/Região (opcional)',
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _bairroController,
-                  textInputAction: TextInputAction.search,
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.location_on_outlined),
-                    labelText: 'Bairro/Região (opcional)',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Builder(
-              builder: (context) {
-                if (items.isEmpty && isAnyLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (items.isEmpty && isAnyError) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('Nenhum profissional encontrado'),
-                          const SizedBox(height: 12),
-                          ElevatedButton(
-                            onPressed: _retry,
-                            child: const Text('Tentar novamente'),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-                if (items.isEmpty) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('Nenhum profissional encontrado'),
-                          const SizedBox(height: 12),
-                          ElevatedButton(
-                            onPressed: _retry,
-                            child: const Text('Tentar novamente'),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-
-                final favoritosSet = favoritosAsync.value
-                        ?.map((p) => p.id)
-                        .toSet() ??
-                    <int>{};
-
-                return ListView.builder(
-                  controller: _scrollController,
-                  itemCount: items.length,
-                  itemBuilder: (context, index) {
-                    final profissional = items[index];
-                    final isFavorito = favoritosSet.contains(profissional.id);
-                    final hasTelefone = profissional.telefone
-                        .trim()
-                        .replaceAll(RegExp(r'[^0-9]'), '')
-                        .isNotEmpty;
-                    return ProfessionalCard(
-                      profissional: profissional,
-                      isFavorite: isFavorito,
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => ProfessionalDetailPage(
-                              profissional: profissional,
+              ),
+              Expanded(
+                child: Builder(
+                  builder: (context) {
+                    if (items.isEmpty && isAnyLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (items.isEmpty) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    isAnyError
+                                        ? 'Erro ao buscar profissionais'
+                                        : 'Nenhum profissional encontrado',
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  ElevatedButton(
+                                    onPressed: _retry,
+                                    child: const Text('Tentar novamente'),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
+                        ),
+                      );
+                    }
+
+                    final favoritosSet = favoritosAsync.value
+                            ?.map((p) => p.id)
+                            .toSet() ??
+                        <int>{};
+
+                    return ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      controller: _scrollController,
+                      itemCount: items.length,
+                      itemBuilder: (context, index) {
+                        final profissional = items[index];
+                        final isFavorito = favoritosSet.contains(profissional.id);
+                        final hasTelefone = profissional.telefone
+                            .trim()
+                            .replaceAll(RegExp(r'[^0-9]'), '')
+                            .isNotEmpty;
+                        return ProfessionalCard(
+                          profissional: profissional,
+                          isFavorite: isFavorito,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => ProfessionalDetailPage(
+                                  profissional: profissional,
+                                ),
+                              ),
+                            );
+                          },
+                          onToggleFavorite: () async {
+                            await ref
+                                .read(favoritosControllerProvider.notifier)
+                                .toggle(profissional);
+                          },
+                          onWhatsApp: !hasTelefone
+                              ? null
+                              : () async {
+                                  final link =
+                                      whatsAppService.buildProfessionalLink(
+                                    telefone: profissional.telefone,
+                                    categoria: profissional.categoria,
+                                  );
+                                  await whatsAppService.open(link);
+                                },
                         );
                       },
-                      onToggleFavorite: () async {
-                        await ref
-                            .read(favoritosControllerProvider.notifier)
-                            .toggle(profissional);
-                      },
-                      onWhatsApp: !hasTelefone
-                          ? null
-                          : () async {
-                              final link = whatsAppService.buildProfessionalLink(
-                                telefone: profissional.telefone,
-                                categoria: profissional.categoria,
-                              );
-                              await whatsAppService.open(link);
-                            },
                     );
                   },
-                );
-              },
-            ),
+                ),
+              ),
+              if (isAnyLoading || _isLoadingMore)
+                const Padding(
+                  padding: EdgeInsets.all(8),
+                  child: CircularProgressIndicator(),
+                ),
+            ],
           ),
-          if (isAnyLoading || _isLoadingMore)
-            const Padding(
-              padding: EdgeInsets.all(8),
-              child: CircularProgressIndicator(),
-            ),
-        ],
+        ),
       ),
     );
   }

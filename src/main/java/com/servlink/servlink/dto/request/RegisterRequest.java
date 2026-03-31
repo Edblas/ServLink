@@ -3,7 +3,6 @@ package com.servlink.servlink.dto.request;
 import com.servlink.servlink.domain.enums.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,6 +23,5 @@ public class RegisterRequest {
     @NotBlank
     private String senha;
 
-    @NotNull
     private Role role;
 }

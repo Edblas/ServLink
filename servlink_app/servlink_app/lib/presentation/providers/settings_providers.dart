@@ -4,7 +4,7 @@ import '../../core/storage/secure_storage_service.dart';
 import 'auth_providers.dart';
 
 class ThemeController extends StateNotifier<ThemeMode> {
-  ThemeController(this._storage) : super(ThemeMode.system) {
+  ThemeController(this._storage) : super(ThemeMode.dark) {
     _load();
   }
 
@@ -15,7 +15,7 @@ class ThemeController extends StateNotifier<ThemeMode> {
     state = switch (value) {
       'light' => ThemeMode.light,
       'dark' => ThemeMode.dark,
-      _ => ThemeMode.system,
+      _ => ThemeMode.dark,
     };
   }
 
@@ -35,9 +35,3 @@ final themeControllerProvider =
   final storage = ref.read(secureStorageProvider);
   return ThemeController(storage);
 });
-
-final apiBaseUrlProvider = FutureProvider<String?>((ref) async {
-  final storage = ref.read(secureStorageProvider);
-  return storage.getApiBaseUrl();
-});
-

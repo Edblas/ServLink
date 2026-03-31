@@ -5,7 +5,6 @@ import '../../providers/catalog_providers.dart';
 import '../../providers/profissional_profile_providers.dart';
 import '../city/city_selection_page.dart';
 import '../profile/profile_page.dart';
-import '../settings/settings_page.dart';
 
 class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
@@ -24,7 +23,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _anosExperienciaController = TextEditingController();
   final _idadeController = TextEditingController();
   final _bairroController = TextEditingController();
-  String _role = 'CLIENTE';
   int? _cidadeId;
   int? _categoriaId;
   String _tipoPagamento = 'DIARIA';
@@ -58,35 +56,34 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       email: _emailController.text.trim().toLowerCase(),
       telefone: _telefoneController.text.trim(),
       senha: _senhaController.text,
-      role: _role,
+      role: 'PROFISSIONAL',
     );
     final state = ref.read(authControllerProvider);
     if (state.session != null) {
-      if (_role == 'PROFISSIONAL') {
-        final remote = ref.read(profissionalProfileRemoteProvider);
-        final updated = await remote.atualizar(
-          descricao: _descricaoController.text.trim().isEmpty
-              ? null
-              : _descricaoController.text.trim(),
-          anosExperiencia: _parseIntOrNull(_anosExperienciaController.text),
-          idade: _parseIntOrNull(_idadeController.text),
-          tipoPagamento: _tipoPagamento,
-          bairro:
-              _bairroController.text.trim().isEmpty ? null : _bairroController.text.trim(),
-          cidadeId: _cidadeId,
-          categoriaId: _categoriaId,
+      final remote = ref.read(profissionalProfileRemoteProvider);
+      final updated = await remote.atualizar(
+        descricao: _descricaoController.text.trim().isEmpty
+            ? null
+            : _descricaoController.text.trim(),
+        anosExperiencia: _parseIntOrNull(_anosExperienciaController.text),
+        idade: _parseIntOrNull(_idadeController.text),
+        tipoPagamento: _tipoPagamento,
+        bairro: _bairroController.text.trim().isEmpty
+            ? null
+            : _bairroController.text.trim(),
+        cidadeId: _cidadeId,
+        categoriaId: _categoriaId,
+      );
+      final entity = updated.toEntity();
+      if (!entity.isPerfilProfissionalCompleto) {
+        if (!mounted) return;
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (_) => const ProfilePage(isOnboarding: true),
+          ),
+          (route) => false,
         );
-        final entity = updated.toEntity();
-        if (!entity.isPerfilProfissionalCompleto) {
-          if (!mounted) return;
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(
-              builder: (_) => const ProfilePage(isOnboarding: true),
-            ),
-            (route) => false,
-          );
-          return;
-        }
+        return;
       }
       if (!mounted) return;
       Navigator.of(context).pushAndRemoveUntil(
@@ -105,16 +102,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Cadastro'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SettingsPage()),
-              );
-            },
-            icon: const Icon(Icons.settings),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -206,240 +193,178 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                             },
                           ),
                           const SizedBox(height: 16),
-                          DropdownButtonFormField<String>(
-                            value: _role,
+                          TextFormField(
+                            controller: _descricaoController,
                             decoration: const InputDecoration(
-                              labelText: 'Tipo de conta',
-                              prefixIcon: Icon(Icons.badge_outlined),
+                              labelText: 'Profissão / descrição',
+                              prefixIcon: Icon(Icons.work_outline),
+                            ),
+                            maxLines: 2,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Informe sua profissão';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _idadeController,
+                            decoration: const InputDecoration(
+                              labelText: 'Idade',
+                              prefixIcon: Icon(Icons.cake_outlined),
+                            ),
+                            keyboardType: TextInputType.number,
+                            validator: (value) {
+                              final parsed = _parseIntOrNull(value ?? '');
+                              if (parsed == null) return 'Informe sua idade';
+                              if (parsed < 0) return 'Informe um valor válido';
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _anosExperienciaController,
+                            decoration: const InputDecoration(
+                              labelText: 'Anos de experiência',
+                              prefixIcon: Icon(Icons.timeline_outlined),
+                            ),
+                            keyboardType: TextInputType.number,
+                            validator: (value) {
+                              final parsed = _parseIntOrNull(value ?? '');
+                              if (parsed == null) return null;
+                              if (parsed < 0) return 'Informe um valor válido';
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          DropdownButtonFormField<String>(
+                            value: _tipoPagamento,
+                            decoration: const InputDecoration(
+                              labelText: 'Pagamento',
+                              prefixIcon: Icon(Icons.payments_outlined),
                             ),
                             items: const [
                               DropdownMenuItem(
-                                value: 'CLIENTE',
-                                child: Text('Cliente'),
+                                value: 'DIARIA',
+                                child: Text('Diária'),
                               ),
                               DropdownMenuItem(
-                                value: 'PROFISSIONAL',
-                                child: Text('Profissional'),
+                                value: 'EMPREITA',
+                                child: Text('Empreita'),
                               ),
                             ],
                             onChanged: (value) {
                               if (value == null) return;
                               setState(() {
-                                _role = value;
+                                _tipoPagamento = value;
                               });
                             },
                           ),
-                          if (_role == 'PROFISSIONAL') ...[
-                            const SizedBox(height: 16),
-                            TextFormField(
-                              controller: _descricaoController,
-                              decoration: const InputDecoration(
-                                labelText: 'Profissão / descrição',
-                                prefixIcon: Icon(Icons.work_outline),
-                              ),
-                              maxLines: 2,
-                              validator: (value) {
-                                if (_role != 'PROFISSIONAL') return null;
-                                if (value == null || value.trim().isEmpty) {
-                                  return 'Informe sua profissão';
-                                }
-                                return null;
-                              },
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _bairroController,
+                            decoration: const InputDecoration(
+                              labelText: 'Bairro/Região',
+                              prefixIcon: Icon(Icons.place_outlined),
                             ),
-                            const SizedBox(height: 12),
-                            TextFormField(
-                              controller: _idadeController,
-                              decoration: const InputDecoration(
-                                labelText: 'Idade',
-                                prefixIcon: Icon(Icons.cake_outlined),
-                              ),
-                              keyboardType: TextInputType.number,
-                              validator: (value) {
-                                if (_role != 'PROFISSIONAL') return null;
-                                final parsed = _parseIntOrNull(value ?? '');
-                                if (parsed == null) return 'Informe sua idade';
-                                if (parsed < 0) return 'Informe um valor válido';
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 12),
-                            TextFormField(
-                              controller: _anosExperienciaController,
-                              decoration: const InputDecoration(
-                                labelText: 'Anos de experiência',
-                                prefixIcon: Icon(Icons.timeline_outlined),
-                              ),
-                              keyboardType: TextInputType.number,
-                              validator: (value) {
-                                if (_role != 'PROFISSIONAL') return null;
-                                final parsed = _parseIntOrNull(value ?? '');
-                                if (parsed == null) return null;
-                                if (parsed < 0) return 'Informe um valor válido';
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 12),
-                            DropdownButtonFormField<String>(
-                              value: _tipoPagamento,
-                              decoration: const InputDecoration(
-                                labelText: 'Pagamento',
-                                prefixIcon: Icon(Icons.payments_outlined),
-                              ),
-                              items: const [
-                                DropdownMenuItem(
-                                  value: 'DIARIA',
-                                  child: Text('Diária'),
+                          ),
+                          const SizedBox(height: 12),
+                          cidadesAsync.when(
+                            data: (cidades) {
+                              return DropdownButtonFormField<int>(
+                                value: _cidadeId,
+                                decoration: const InputDecoration(
+                                  labelText: 'Cidade',
+                                  prefixIcon: Icon(Icons.location_city_outlined),
                                 ),
-                                DropdownMenuItem(
-                                  value: 'EMPREITA',
-                                  child: Text('Empreita'),
+                                items: cidades
+                                    .map(
+                                      (c) => DropdownMenuItem(
+                                        value: c.id,
+                                        child: Text('${c.nome} - ${c.estado}'),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _cidadeId = value;
+                                  });
+                                },
+                                validator: (value) {
+                                  if (value == null) return 'Selecione sua cidade';
+                                  return null;
+                                },
+                              );
+                            },
+                            loading: () => const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(8),
+                                child: CircularProgressIndicator(),
+                              ),
+                            ),
+                            error: (_, __) => const Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Text(
+                                  'Erro ao carregar cidades',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(color: Colors.red),
                                 ),
                               ],
-                              onChanged: (value) {
-                                if (value == null) return;
-                                setState(() {
-                                  _tipoPagamento = value;
-                                });
-                              },
                             ),
-                            const SizedBox(height: 12),
-                            TextFormField(
-                              controller: _bairroController,
-                              decoration: const InputDecoration(
-                                labelText: 'Bairro/Região',
-                                prefixIcon: Icon(Icons.place_outlined),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            cidadesAsync.when(
-                              data: (cidades) {
-                                return DropdownButtonFormField<int>(
-                                  value: _cidadeId,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Cidade',
-                                    prefixIcon: Icon(Icons.location_city_outlined),
-                                  ),
-                                  items: cidades
-                                      .map(
-                                        (c) => DropdownMenuItem(
-                                          value: c.id,
-                                          child: Text('${c.nome} - ${c.estado}'),
-                                        ),
-                                      )
-                                      .toList(),
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _cidadeId = value;
-                                    });
-                                  },
-                                  validator: (value) {
-                                    if (_role != 'PROFISSIONAL') return null;
-                                    if (value == null) return 'Selecione sua cidade';
-                                    return null;
-                                  },
-                                );
-                              },
-                              loading: () => const Center(
-                                child: Padding(
-                                  padding: EdgeInsets.all(8),
-                                  child: CircularProgressIndicator(),
+                          ),
+                          const SizedBox(height: 12),
+                          categoriasAsync.when(
+                            data: (categorias) {
+                              return DropdownButtonFormField<int>(
+                                value: _categoriaId,
+                                decoration: const InputDecoration(
+                                  labelText: 'Categoria',
+                                  prefixIcon: Icon(Icons.category_outlined),
                                 ),
-                              ),
-                              error: (_, __) => Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  const Text(
-                                    'Erro ao carregar cidades',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(color: Colors.red),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (_) => const SettingsPage(),
-                                        ),
-                                      );
-                                    },
-                                    child: const Text('Configurar servidor'),
-                                  ),
-                                ],
+                                items: categorias
+                                    .map(
+                                      (c) => DropdownMenuItem(
+                                        value: c.id,
+                                        child: Text(c.nome),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _categoriaId = value;
+                                  });
+                                },
+                                validator: (value) {
+                                  if (value == null) return 'Selecione sua categoria';
+                                  return null;
+                                },
+                              );
+                            },
+                            loading: () => const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(8),
+                                child: CircularProgressIndicator(),
                               ),
                             ),
-                            const SizedBox(height: 12),
-                            categoriasAsync.when(
-                              data: (categorias) {
-                                return DropdownButtonFormField<int>(
-                                  value: _categoriaId,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Categoria',
-                                    prefixIcon: Icon(Icons.category_outlined),
-                                  ),
-                                  items: categorias
-                                      .map(
-                                        (c) => DropdownMenuItem(
-                                          value: c.id,
-                                          child: Text(c.nome),
-                                        ),
-                                      )
-                                      .toList(),
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _categoriaId = value;
-                                    });
-                                  },
-                                  validator: (value) {
-                                    if (_role != 'PROFISSIONAL') return null;
-                                    if (value == null) return 'Selecione sua categoria';
-                                    return null;
-                                  },
-                                );
-                              },
-                              loading: () => const Center(
-                                child: Padding(
-                                  padding: EdgeInsets.all(8),
-                                  child: CircularProgressIndicator(),
+                            error: (_, __) => const Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Text(
+                                  'Erro ao carregar categorias',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(color: Colors.red),
                                 ),
-                              ),
-                              error: (_, __) => Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  const Text(
-                                    'Erro ao carregar categorias',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(color: Colors.red),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (_) => const SettingsPage(),
-                                        ),
-                                      );
-                                    },
-                                    child: const Text('Configurar servidor'),
-                                  ),
-                                ],
-                              ),
+                              ],
                             ),
-                          ],
+                          ),
                           if (authState.errorMessage != null) ...[
                             const SizedBox(height: 12),
                             Text(
                               authState.errorMessage!,
                               style: const TextStyle(color: Colors.red),
                               textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 4),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const SettingsPage(),
-                                  ),
-                                );
-                              },
-                              child: const Text('Configurar servidor'),
                             ),
                           ],
                         ],
@@ -453,19 +378,24 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         ),
       ),
       bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              ElevatedButton(
-                onPressed: authState.isLoading ? null : _submit,
-                child: authState.isLoading
-                    ? const CircularProgressIndicator()
-                    : const Text('Cadastrar'),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ElevatedButton(
+                    onPressed: authState.isLoading ? null : _submit,
+                    child: authState.isLoading
+                        ? const CircularProgressIndicator()
+                        : const Text('Cadastrar'),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

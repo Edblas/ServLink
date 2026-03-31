@@ -47,119 +47,153 @@ class ProfessionalDetailPage extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 32,
-                child: Text(profissional.nome.substring(0, 1)),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      profissional.nome,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text('${profissional.categoria} • ${profissional.cidade}'),
-                    if (profissional.anosExperiencia != null) ...[
-                      const SizedBox(height: 4),
-                      Text('${profissional.anosExperiencia} anos de experiência'),
-                    ],
-                    const SizedBox(height: 4),
-                    Row(
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 32,
+                    child: Text(profissional.nome.substring(0, 1)),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.star, size: 18, color: Colors.amber),
-                        const SizedBox(width: 4),
-                        Text(profissional.mediaAvaliacoes.toStringAsFixed(1)),
+                        Text(
+                          profissional.nome,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text('${profissional.categoria} • ${profissional.cidade}'),
+                        if (profissional.anosExperiencia != null) ...[
+                          const SizedBox(height: 4),
+                          Text('${profissional.anosExperiencia} anos de experiência'),
+                        ],
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(Icons.star, size: 18, color: Colors.amber),
+                            const SizedBox(width: 4),
+                            Text(profissional.mediaAvaliacoes.toStringAsFixed(1)),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.badge,
+                              size: 18,
+                              color: profissional.carteiraMotorista ? Colors.green : Colors.grey,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(profissional.carteiraMotorista
+                                ? 'Carteira de motorista'
+                                : 'Sem carteira de motorista'),
+                          ],
+                        ),
+                        if (instagramLink != null ||
+                            tiktokLink != null ||
+                            siteLink != null) ...[
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 4,
+                            children: [
+                              if (instagramLink != null)
+                                IconButton(
+                                  onPressed: () => _openExternalUrl(context, instagramLink),
+                                  icon: const FaIcon(FontAwesomeIcons.instagram),
+                                  color: Theme.of(context).colorScheme.primary,
+                                  tooltip: 'Instagram',
+                                ),
+                              if (tiktokLink != null)
+                                IconButton(
+                                  onPressed: () => _openExternalUrl(context, tiktokLink),
+                                  icon: const FaIcon(FontAwesomeIcons.tiktok),
+                                  color: Theme.of(context).colorScheme.primary,
+                                  tooltip: 'TikTok',
+                                ),
+                              if (siteLink != null)
+                                IconButton(
+                                  onPressed: () => _openExternalUrl(context, siteLink),
+                                  icon: const Icon(Icons.public),
+                                  color: Theme.of(context).colorScheme.primary,
+                                  tooltip: 'Site',
+                                ),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
-                    if (instagramLink != null ||
-                        tiktokLink != null ||
-                        siteLink != null) ...[
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 4,
-                        children: [
-                          if (instagramLink != null)
-                            IconButton(
-                              onPressed: () => _openExternalUrl(context, instagramLink),
-                              icon: const FaIcon(FontAwesomeIcons.instagram),
-                              color: Theme.of(context).colorScheme.primary,
-                              tooltip: 'Instagram',
-                            ),
-                          if (tiktokLink != null)
-                            IconButton(
-                              onPressed: () => _openExternalUrl(context, tiktokLink),
-                              icon: const FaIcon(FontAwesomeIcons.tiktok),
-                              color: Theme.of(context).colorScheme.primary,
-                              tooltip: 'TikTok',
-                            ),
-                          if (siteLink != null)
-                            IconButton(
-                              onPressed: () => _openExternalUrl(context, siteLink),
-                              icon: const Icon(Icons.public),
-                              color: Theme.of(context).colorScheme.primary,
-                              tooltip: 'Site',
-                            ),
-                        ],
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            profissional.descricao,
-            style: const TextStyle(fontSize: 16),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Avaliações',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 8),
-          avaliacoesAsync.when(
-            data: (avaliacoes) {
-              if (avaliacoes.isEmpty) {
-                return const Text('Ainda não há avaliações');
-              }
-              final limit = avaliacoes.length > 3 ? 3 : avaliacoes.length;
-              return Column(
-                children: [
-                  for (var i = 0; i < limit; i++)
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: CircleAvatar(
-                        child: Text(avaliacoes[i].nota.toString()),
-                      ),
-                      title: Row(
-                        children: [
-                          const Icon(Icons.star, size: 16, color: Colors.amber),
-                          const SizedBox(width: 4),
-                          Text(avaliacoes[i].nota.toString()),
-                        ],
-                      ),
-                      subtitle: (avaliacoes[i].comentario.trim().isEmpty)
-                          ? null
-                          : Text(avaliacoes[i].comentario),
-                    ),
+                  ),
                 ],
-              );
-            },
-            loading: () => const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: Center(child: CircularProgressIndicator()),
+              ),
             ),
-            error: (error, stackTrace) =>
-                const Text('Erro ao carregar avaliações'),
+          ),
+          const SizedBox(height: 16),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                profissional.descricao,
+                style: const TextStyle(fontSize: 16),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Avaliações',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  avaliacoesAsync.when(
+                    data: (avaliacoes) {
+                      if (avaliacoes.isEmpty) {
+                        return const Text('Ainda não há avaliações');
+                      }
+                      final limit = avaliacoes.length > 3 ? 3 : avaliacoes.length;
+                      return Column(
+                        children: [
+                          for (var i = 0; i < limit; i++)
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: CircleAvatar(
+                                child: Text(avaliacoes[i].nota.toString()),
+                              ),
+                              title: Row(
+                                children: [
+                                  const Icon(Icons.star, size: 16, color: Colors.amber),
+                                  const SizedBox(width: 4),
+                                  Text(avaliacoes[i].nota.toString()),
+                                ],
+                              ),
+                              subtitle: (avaliacoes[i].comentario.trim().isEmpty)
+                                  ? null
+                                  : Text(avaliacoes[i].comentario),
+                            ),
+                        ],
+                      );
+                    },
+                    loading: () => const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                    error: (error, stackTrace) =>
+                        const Text('Erro ao carregar avaliações'),
+                  ),
+                ],
+              ),
+            ),
           ),
           const SizedBox(height: 16),
           Row(

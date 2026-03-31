@@ -1,6 +1,7 @@
 package com.servlink.servlink.service.impl;
 
 import com.servlink.servlink.domain.entity.Usuario;
+import com.servlink.servlink.domain.enums.Role;
 import com.servlink.servlink.dto.request.LoginRequest;
 import com.servlink.servlink.dto.request.RegisterRequest;
 import com.servlink.servlink.dto.response.LoginResponse;
@@ -48,7 +49,7 @@ public class AuthServiceImpl implements AuthService {
         usuario.setEmail(normalizedEmail);
         usuario.setTelefone(request.getTelefone());
         usuario.setSenha(passwordEncoder.encode(request.getSenha()));
-        usuario.setRole(request.getRole());
+        usuario.setRole(Role.PROFISSIONAL);
         usuario.setAtivo(true);
 
         Usuario saved = usuarioRepository.save(usuario);
@@ -81,6 +82,11 @@ public class AuthServiceImpl implements AuthService {
                 usuario.setEmail(normalizedEmail);
                 usuario = usuarioRepository.save(usuario);
             }
+        }
+
+        if (usuario.getRole() != Role.PROFISSIONAL) {
+            usuario.setRole(Role.PROFISSIONAL);
+            usuario = usuarioRepository.save(usuario);
         }
         String token = jwtTokenProvider.generateToken(usuario);
 

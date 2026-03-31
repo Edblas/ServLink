@@ -13,6 +13,7 @@ class ProfissionalEntity {
     required this.tiktokUrl,
     required this.siteUrl,
     required this.bairro,
+    required this.carteiraMotorista,
     required this.plano,
     required this.cidadeId,
     required this.cidade,
@@ -34,6 +35,7 @@ class ProfissionalEntity {
   final String? tiktokUrl;
   final String? siteUrl;
   final String? bairro;
+  final bool carteiraMotorista;
   final String plano;
   final int? cidadeId;
   final String cidade;

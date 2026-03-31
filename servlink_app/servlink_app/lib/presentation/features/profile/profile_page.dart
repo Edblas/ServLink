@@ -6,6 +6,7 @@ import '../../providers/catalog_providers.dart';
 import '../../providers/profissional_profile_providers.dart';
 import '../city/city_selection_page.dart';
 import '../auth/login_page.dart';
+import '../settings/settings_page.dart';
 
 class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key, this.isOnboarding = false});
@@ -18,6 +19,8 @@ class ProfilePage extends ConsumerStatefulWidget {
 
 class _ProfilePageState extends ConsumerState<ProfilePage> {
   final _formKey = GlobalKey<FormState>();
+  final _nomeController = TextEditingController();
+  final _telefoneController = TextEditingController();
   final _descricaoController = TextEditingController();
   final _fotoUrlController = TextEditingController();
   final _anosExperienciaController = TextEditingController();
@@ -30,6 +33,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   bool _formInitialized = false;
   bool _saving = false;
   bool _uploadingPhoto = false;
+  bool _carteiraMotorista = false;
 
   int? _cidadeId;
   int? _categoriaId;
@@ -37,6 +41,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
   @override
   void dispose() {
+    _nomeController.dispose();
+    _telefoneController.dispose();
     _descricaoController.dispose();
     _fotoUrlController.dispose();
     _anosExperienciaController.dispose();
@@ -58,75 +64,104 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   Widget build(BuildContext context) {
     final state = ref.watch(authControllerProvider);
     final session = state.session;
-    final isProfissional = session?.role == 'PROFISSIONAL';
+    final profissionalAsync = ref.watch(profissionalMeProvider);
+    String? fotoUrl;
+    profissionalAsync.whenData((p) {
+      fotoUrl = (p.fotoUrl ?? '').trim().isEmpty ? null : p.fotoUrl!.trim();
+    });
 
     final content = Scaffold(
       appBar: AppBar(
         title: const Text('Perfil'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SettingsPage()),
+              );
+            },
+            icon: const Icon(Icons.settings),
+          ),
+        ],
       ),
       body: session == null
           ? const Center(child: Text('Nenhum usuário autenticado'))
           : SafeArea(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 520),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CircleAvatar(
-                          radius: 32,
-                          child: Text(session.nome.substring(0, 1)),
-                        ),
-                        const SizedBox(width: 16),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              session.nome,
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 32,
+                                  backgroundImage: fotoUrl != null ? NetworkImage(fotoUrl!) : null,
+                                  child: fotoUrl == null ? Text(session.nome.substring(0, 1)) : null,
+                                ),
+                                const SizedBox(width: 16),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      session.nome,
+                                      style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(session.email),
+                                  ],
+                                ),
+                                const Spacer(),
+                                OutlinedButton.icon(
+                                  onPressed: _uploadingPhoto ? null : _changePhoto,
+                                  icon: _uploadingPhoto
+                                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                                      : const Icon(Icons.photo_camera_outlined),
+                                  label: const Text('Alterar foto'),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 4),
-                            Text(session.email),
-                            const SizedBox(height: 4),
-                            Text('Tipo: ${session.role}'),
-                          ],
+                          ),
                         ),
+                        const SizedBox(height: 24),
+                        const Text(
+                          'Perfil profissional',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildProfissionalForm(),
+                        const SizedBox(height: 24),
+                        if (!widget.isOnboarding)
+                          ElevatedButton.icon(
+                            onPressed: () async {
+                              await ref.read(authControllerProvider.notifier).logout();
+                              if (context.mounted) {
+                                Navigator.of(context).pushAndRemoveUntil(
+                                  MaterialPageRoute(
+                                    builder: (_) => const LoginPage(),
+                                  ),
+                                  (route) => false,
+                                );
+                              }
+                            },
+                            icon: const Icon(Icons.logout),
+                            label: const Text('Sair'),
+                          ),
                       ],
                     ),
-                    if (isProfissional) ...[
-                      const SizedBox(height: 24),
-                      const Text(
-                        'Perfil profissional',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      _buildProfissionalForm(),
-                    ],
-                    const SizedBox(height: 24),
-                    if (!widget.isOnboarding)
-                      ElevatedButton.icon(
-                        onPressed: () async {
-                          await ref.read(authControllerProvider.notifier).logout();
-                          if (context.mounted) {
-                            Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(
-                                builder: (_) => const LoginPage(),
-                              ),
-                              (route) => false,
-                            );
-                          }
-                        },
-                        icon: const Icon(Icons.logout),
-                        label: const Text('Sair'),
-                      ),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -151,6 +186,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!mounted || _formInitialized) return;
             setState(() {
+              _nomeController.text = profissional.nome;
+              _telefoneController.text = profissional.telefone;
               _descricaoController.text = profissional.descricao;
               _fotoUrlController.text = profissional.fotoUrl ?? '';
               _anosExperienciaController.text =
@@ -163,6 +200,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               _instagramController.text = profissional.instagramUrl ?? '';
               _tiktokController.text = profissional.tiktokUrl ?? '';
               _siteController.text = profissional.siteUrl ?? '';
+              _carteiraMotorista = profissional.carteiraMotorista;
               _formInitialized = true;
             });
           });
@@ -187,11 +225,14 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           missing.add('categoria');
         }
 
-        return Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
               Text(
                 'Perfil ${(percent * 100).round()}% completo',
                 style: const TextStyle(fontWeight: FontWeight.w600),
@@ -203,6 +244,45 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 Text('Falta: ${missing.join(', ')}'),
               ],
               const SizedBox(height: 16),
+              TextFormField(
+                controller: _nomeController,
+                decoration: const InputDecoration(
+                  labelText: 'Nome',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Informe seu nome';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _telefoneController,
+                decoration: const InputDecoration(
+                  labelText: 'Telefone',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.phone,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Informe seu telefone';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              SwitchListTile(
+                value: _carteiraMotorista,
+                onChanged: (value) {
+                  setState(() {
+                    _carteiraMotorista = value;
+                  });
+                },
+                title: const Text('Possui carteira de motorista'),
+              ),
+              const SizedBox(height: 12),
               TextFormField(
                 controller: _descricaoController,
                 decoration: const InputDecoration(
@@ -412,7 +492,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     ? const CircularProgressIndicator()
                     : Text(widget.isOnboarding ? 'Salvar e continuar' : 'Salvar perfil'),
               ),
-            ],
+              ],
+            ),
+          ),
           ),
         );
       },
@@ -431,6 +513,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     try {
       final remote = ref.read(profissionalProfileRemoteProvider);
       final updated = await remote.atualizar(
+        nome: _nomeController.text.trim(),
+        telefone: _telefoneController.text.trim(),
         descricao: _descricaoController.text.trim(),
         fotoUrl: _fotoUrlController.text.trim().isEmpty
             ? ''
@@ -443,9 +527,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         siteUrl: _siteController.text.trim(),
         bairro:
             _bairroController.text.trim().isEmpty ? '' : _bairroController.text.trim(),
+        carteiraMotorista: _carteiraMotorista,
         cidadeId: _cidadeId,
         categoriaId: _categoriaId,
       );
+      ref
+          .read(authControllerProvider.notifier)
+          .updateSession(nome: updated.nome);
       ref.invalidate(profissionalMeProvider);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -478,6 +566,39 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       if (mounted) {
         setState(() {
           _saving = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _changePhoto() async {
+    if (_uploadingPhoto) return;
+    setState(() {
+      _uploadingPhoto = true;
+    });
+    try {
+      final picker = ImagePicker();
+      final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+      if (picked == null) return;
+      final remote = ref.read(profissionalProfileRemoteProvider);
+      final updated = await remote.uploadFoto(picked.path);
+      ref.invalidate(profissionalMeProvider);
+      if (mounted) {
+        _fotoUrlController.text = updated.fotoUrl ?? '';
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Foto atualizada')),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Falha ao enviar foto')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _uploadingPhoto = false;
         });
       }
     }

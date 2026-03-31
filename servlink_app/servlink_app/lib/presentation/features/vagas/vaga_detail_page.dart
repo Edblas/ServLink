@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_providers.dart';
+import '../../providers/favoritos_providers.dart';
 import '../../providers/vaga_providers.dart';
 import '../../providers/whatsapp_providers.dart';
 import 'candidatos_page.dart';
@@ -24,10 +25,25 @@ class VagaDetailPage extends ConsumerWidget {
     final role = authState.session?.role;
     final actionState = ref.watch(vagaActionControllerProvider);
     final whatsAppService = ref.watch(whatsAppServiceProvider);
+    final vagasFavoritasAsync = ref.watch(vagasFavoritasControllerProvider);
+    final isFavorita = vagasFavoritasAsync.value?.contains(vagaId) ?? false;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Detalhe da vaga'),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              await ref
+                  .read(vagasFavoritasControllerProvider.notifier)
+                  .toggle(vagaId);
+            },
+            icon: Icon(
+              isFavorita ? Icons.favorite : Icons.favorite_border,
+              color: isFavorita ? Colors.red : null,
+            ),
+          ),
+        ],
       ),
       body: vagaAsync.when(
         data: (vaga) {
@@ -45,102 +61,160 @@ class VagaDetailPage extends ConsumerWidget {
             _ => 'Bico (temporário)',
           };
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  vaga.titulo,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text('${vaga.empresaNome} • ${vaga.cidadeNome}'),
-                const SizedBox(height: 4),
-                Text('Categoria: ${vaga.categoriaNome}'),
-                const SizedBox(height: 4),
-                Text('Data: ${_formatDate(vaga.dataTrabalho)}'),
-                const SizedBox(height: 4),
-                Text('Urgência: $urgenciaLabel'),
-                const SizedBox(height: 4),
-                Text('Tipo: $tipoLabel'),
-                const SizedBox(height: 4),
-                Text('Valor estimado: R\$ ${vaga.valor.toStringAsFixed(2)}'),
-                const SizedBox(height: 4),
-                Text('Status: ${vaga.status}'),
-                const SizedBox(height: 16),
-                const Text(
-                  'Descrição',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 8),
-                Text(vaga.descricao),
-                const SizedBox(height: 24),
-                if (role == 'CLIENTE')
-                  OutlinedButton(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => CandidatosPage(vagaId: vaga.id),
-                        ),
-                      );
-                    },
-                    child: const Text('Ver candidatos'),
-                  ),
-                if (role == 'CLIENTE') const SizedBox(height: 12),
-                OutlinedButton(
-                  onPressed: hasTelefone
-                      ? () async {
-                          final link = whatsAppService.buildClienteLink(
-                            telefone: vaga.empresaTelefone,
-                            mensagem: 'Olá, vi sua vaga no ServLink: ${vaga.titulo}',
-                          );
-                          final ok = await whatsAppService.open(link);
-                          if (!context.mounted) return;
-                          if (!ok) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Não foi possível abrir o WhatsApp'),
+          return SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 520),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                vaga.titulo,
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            );
-                          }
-                        }
-                      : null,
-                  child: const Text('Entrar em contato'),
-                ),
-                const SizedBox(height: 12),
-                if (role == 'PROFISSIONAL')
-                  ElevatedButton(
-                    onPressed: canApply
-                        ? () async {
-                            try {
-                              await ref
-                                  .read(vagaActionControllerProvider.notifier)
-                                  .candidatar(vaga.id);
-                              if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Candidatura enviada'),
+                              const SizedBox(height: 8),
+                              Text('${vaga.empresaNome} • ${vaga.cidadeNome}'),
+                              const SizedBox(height: 4),
+                              Text('Categoria: ${vaga.categoriaNome}'),
+                              const SizedBox(height: 4),
+                              Text('Data: ${_formatDate(vaga.dataTrabalho)}'),
+                              const SizedBox(height: 4),
+                              Text('Urgência: $urgenciaLabel'),
+                              const SizedBox(height: 4),
+                              Text('Tipo: $tipoLabel'),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Valor estimado: R\$ ${vaga.valor.toStringAsFixed(2)}',
+                              ),
+                              const SizedBox(height: 4),
+                              Text('Status: ${vaga.status}'),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              const Text(
+                                'Descrição',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
                                 ),
-                              );
-                            } catch (_) {
-                              if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Falha ao candidatar'),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(vaga.descricao),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              if (role == 'CLIENTE')
+                                OutlinedButton(
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            CandidatosPage(vagaId: vaga.id),
+                                      ),
+                                    );
+                                  },
+                                  child: const Text('Ver candidatos'),
                                 ),
-                              );
-                            }
-                          }
-                        : null,
-                    child: actionState.isLoading
-                        ? const CircularProgressIndicator()
-                        : const Text('Candidatar-se'),
+                              if (role == 'CLIENTE') const SizedBox(height: 12),
+                              OutlinedButton(
+                                onPressed: hasTelefone
+                                    ? () async {
+                                        final link =
+                                            whatsAppService.buildClienteLink(
+                                          telefone: vaga.empresaTelefone,
+                                          mensagem:
+                                              'Olá, vi sua vaga no ServLink: ${vaga.titulo}',
+                                        );
+                                        final ok = await whatsAppService.open(
+                                          link,
+                                        );
+                                        if (!context.mounted) return;
+                                        if (!ok) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Não foi possível abrir o WhatsApp',
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    : null,
+                                child: const Text('Entrar em contato'),
+                              ),
+                              if (role == 'PROFISSIONAL') ...[
+                                const SizedBox(height: 12),
+                                ElevatedButton(
+                                  onPressed: canApply
+                                      ? () async {
+                                          try {
+                                            await ref
+                                                .read(
+                                                  vagaActionControllerProvider
+                                                      .notifier,
+                                                )
+                                                .candidatar(vaga.id);
+                                            if (!context.mounted) return;
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content:
+                                                    Text('Candidatura enviada'),
+                                              ),
+                                            );
+                                          } catch (_) {
+                                            if (!context.mounted) return;
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content:
+                                                    Text('Falha ao candidatar'),
+                                              ),
+                                            );
+                                          }
+                                        }
+                                      : null,
+                                  child: actionState.isLoading
+                                      ? const CircularProgressIndicator()
+                                      : const Text('Candidatar-se'),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-              ],
+                ),
+              ),
             ),
           );
         },

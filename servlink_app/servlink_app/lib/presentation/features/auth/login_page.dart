@@ -4,7 +4,6 @@ import '../../providers/auth_providers.dart';
 import '../../providers/profissional_profile_providers.dart';
 import '../city/city_selection_page.dart';
 import '../profile/profile_page.dart';
-import '../settings/settings_page.dart';
 import 'register_page.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -70,16 +69,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Entrar'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SettingsPage()),
-              );
-            },
-            icon: const Icon(Icons.settings),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -147,17 +136,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               authState.errorMessage!,
                               style: const TextStyle(color: Colors.red),
                               textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 4),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const SettingsPage(),
-                                  ),
-                                );
-                              },
-                              child: const Text('Configurar servidor'),
                             ),
                           ],
                         ],

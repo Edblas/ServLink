@@ -26,7 +26,7 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('CLIENTE')")
+    @PreAuthorize("hasAnyRole('CLIENTE','PROFISSIONAL')")
     public ClienteResponse criarOuObterClienteAtual() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -52,7 +52,7 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
-    @PreAuthorize("hasRole('CLIENTE')")
+    @PreAuthorize("hasAnyRole('CLIENTE','PROFISSIONAL')")
     public ClienteResponse obterClienteAtual() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -78,4 +78,3 @@ public class ClienteServiceImpl implements ClienteService {
                 .build();
     }
 }
-

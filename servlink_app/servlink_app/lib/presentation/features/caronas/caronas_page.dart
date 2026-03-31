@@ -25,30 +25,51 @@ class CaronasPage extends ConsumerWidget {
       ),
       body: caronasAsync.when(
         data: (caronas) {
-          if (caronas.isEmpty) {
-            return const Center(child: Text('Nenhuma carona disponível'));
-          }
-          return RefreshIndicator(
-            onRefresh: () async {
-              ref.invalidate(caronasProvider);
-              await ref.read(caronasProvider.future);
-            },
-            child: ListView.separated(
-              itemCount: caronas.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
-              itemBuilder: (context, index) {
-                final c = caronas[index];
-                final date = '${c.dataHora.day.toString().padLeft(2, '0')}/'
-                    '${c.dataHora.month.toString().padLeft(2, '0')}/'
-                    '${c.dataHora.year} ${c.dataHora.hour.toString().padLeft(2, '0')}:'
-                    '${c.dataHora.minute.toString().padLeft(2, '0')}';
-                final price = c.valor != null ? ' • R\$ ${c.valor!.toStringAsFixed(2)}' : '';
-                return ListTile(
-                  title: Text('${c.origem} → ${c.destino}'),
-                  subtitle: Text('$date • ${c.vagas} vagas$price'),
-                  trailing: Text(c.usuarioNome),
-                );
-              },
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: caronas.isEmpty
+                  ? const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Card(
+                        child: Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Text(
+                            'Nenhuma carona disponível',
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    )
+                  : RefreshIndicator(
+                      onRefresh: () async {
+                        ref.invalidate(caronasProvider);
+                        await ref.read(caronasProvider.future);
+                      },
+                      child: ListView.builder(
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                        itemCount: caronas.length,
+                        itemBuilder: (context, index) {
+                          final c = caronas[index];
+                          final date = '${c.dataHora.day.toString().padLeft(2, '0')}/'
+                              '${c.dataHora.month.toString().padLeft(2, '0')}/'
+                              '${c.dataHora.year} ${c.dataHora.hour.toString().padLeft(2, '0')}:'
+                              '${c.dataHora.minute.toString().padLeft(2, '0')}';
+                          final price = c.valor != null
+                              ? ' • R\$ ${c.valor!.toStringAsFixed(2)}'
+                              : '';
+
+                          return Card(
+                            child: ListTile(
+                              title: Text('${c.origem} → ${c.destino}'),
+                              subtitle: Text(
+                                '$date • ${c.vagas} vagas$price • ${c.usuarioNome}',
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
             ),
           );
         },

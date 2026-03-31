@@ -51,7 +51,7 @@ public class ServLinkApplication {
                 usuario.setEmail("teste@servlink.com");
                 usuario.setTelefone("000000000");
                 usuario.setSenha(passwordEncoder.encode("123456"));
-                usuario.setRole(Role.CLIENTE);
+                usuario.setRole(Role.PROFISSIONAL);
                 usuario.setAtivo(true);
                 return usuarioRepository.save(usuario);
             });

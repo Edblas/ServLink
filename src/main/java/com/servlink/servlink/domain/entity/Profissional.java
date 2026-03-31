@@ -55,6 +55,9 @@ public class Profissional extends BaseEntity {
     @Column(length = 255)
     private String bairro;
 
+    @Column(name = "carteira_motorista")
+    private Boolean carteiraMotorista;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Plano plano;

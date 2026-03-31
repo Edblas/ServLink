@@ -20,6 +20,8 @@ class ProfissionalProfileRemoteDataSource {
   }
 
   Future<ProfissionalModel> atualizar({
+    String? nome,
+    String? telefone,
     String? descricao,
     String? fotoUrl,
     int? anosExperiencia,
@@ -29,10 +31,13 @@ class ProfissionalProfileRemoteDataSource {
     String? tiktokUrl,
     String? siteUrl,
     String? bairro,
+    bool? carteiraMotorista,
     int? cidadeId,
     int? categoriaId,
   }) async {
     final data = <String, dynamic>{};
+    if (nome != null) data['nome'] = nome;
+    if (telefone != null) data['telefone'] = telefone;
     if (descricao != null) data['descricao'] = descricao;
     if (fotoUrl != null) data['fotoUrl'] = fotoUrl;
     if (anosExperiencia != null) data['anosExperiencia'] = anosExperiencia;
@@ -42,6 +47,7 @@ class ProfissionalProfileRemoteDataSource {
     if (tiktokUrl != null) data['tiktokUrl'] = tiktokUrl;
     if (siteUrl != null) data['siteUrl'] = siteUrl;
     if (bairro != null) data['bairro'] = bairro;
+    if (carteiraMotorista != null) data['carteiraMotorista'] = carteiraMotorista;
     if (cidadeId != null) data['cidadeId'] = cidadeId;
     if (categoriaId != null) data['categoriaId'] = categoriaId;
 

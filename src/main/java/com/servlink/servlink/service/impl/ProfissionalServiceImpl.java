@@ -84,6 +84,7 @@ public class ProfissionalServiceImpl implements ProfissionalService {
         profissional.setTiktokUrl(request.getTiktokUrl());
         profissional.setSiteUrl(request.getSiteUrl());
         profissional.setBairro(request.getBairro());
+        profissional.setCarteiraMotorista(Boolean.FALSE);
         profissional.setPlano(request.getPlano());
         profissional.setCidade(cidade);
         profissional.setCategoria(categoria);
@@ -173,6 +174,26 @@ public class ProfissionalServiceImpl implements ProfissionalService {
                     return profissionalRepository.save(novo);
                 });
 
+        if (request.getNome() != null) {
+            String nome = request.getNome().trim();
+            if (nome.isEmpty()) {
+                throw new IllegalArgumentException("Nome não pode ser vazio");
+            }
+            Usuario usuario = profissional.getUsuario();
+            usuario.setNome(nome);
+            usuarioRepository.save(usuario);
+        }
+
+        if (request.getTelefone() != null) {
+            String telefone = request.getTelefone().trim();
+            if (telefone.isEmpty()) {
+                throw new IllegalArgumentException("Telefone não pode ser vazio");
+            }
+            Usuario usuario = profissional.getUsuario();
+            usuario.setTelefone(telefone);
+            usuarioRepository.save(usuario);
+        }
+
         if (request.getDescricao() != null) {
             String descricao = request.getDescricao().trim();
             if (descricao.isEmpty()) {
@@ -189,6 +210,10 @@ public class ProfissionalServiceImpl implements ProfissionalService {
         if (request.getBairro() != null) {
             String bairro = request.getBairro().trim();
             profissional.setBairro(bairro.isEmpty() ? null : bairro);
+        }
+
+        if (request.getCarteiraMotorista() != null) {
+            profissional.setCarteiraMotorista(request.getCarteiraMotorista());
         }
 
         if (request.getAnosExperiencia() != null) {

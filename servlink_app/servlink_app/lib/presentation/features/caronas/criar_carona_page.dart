@@ -70,111 +70,136 @@ class _CriarCaronaPageState extends ConsumerState<CriarCaronaPage> {
       appBar: AppBar(
         title: const Text('Nova carona'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              TextFormField(
-                controller: _origemController,
-                decoration: const InputDecoration(
-                  labelText: 'Origem',
-                  border: OutlineInputBorder(),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        TextFormField(
+                          controller: _origemController,
+                          decoration: const InputDecoration(
+                            labelText: 'Origem',
+                            border: OutlineInputBorder(),
+                          ),
+                          validator: (v) =>
+                              v == null || v.trim().isEmpty ? 'Informe a origem' : null,
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _destinoController,
+                          decoration: const InputDecoration(
+                            labelText: 'Destino',
+                            border: OutlineInputBorder(),
+                          ),
+                          validator: (v) =>
+                              v == null || v.trim().isEmpty ? 'Informe o destino' : null,
+                        ),
+                        const SizedBox(height: 12),
+                        OutlinedButton.icon(
+                          onPressed: _pickDateTime,
+                          icon: const Icon(Icons.calendar_today),
+                          label: Text(
+                            _dataHora == null
+                                ? 'Escolher data e hora'
+                                : '${_dataHora!.day.toString().padLeft(2, '0')}/'
+                                    '${_dataHora!.month.toString().padLeft(2, '0')}/'
+                                    '${_dataHora!.year} '
+                                    '${_dataHora!.hour.toString().padLeft(2, '0')}:'
+                                    '${_dataHora!.minute.toString().padLeft(2, '0')}',
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _vagasController,
+                          decoration: const InputDecoration(
+                            labelText: 'Vagas',
+                            border: OutlineInputBorder(),
+                          ),
+                          keyboardType: TextInputType.number,
+                          validator: (v) {
+                            final parsed = _parseIntOrNull(v ?? '');
+                            if (parsed == null || parsed <= 0) {
+                              return 'Informe um número válido';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _valorController,
+                          decoration: const InputDecoration(
+                            labelText: 'Valor (opcional)',
+                            border: OutlineInputBorder(),
+                          ),
+                          keyboardType:
+                              const TextInputType.numberWithOptions(decimal: true),
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _telefoneController,
+                          decoration: const InputDecoration(
+                            labelText: 'Telefone para contato',
+                            border: OutlineInputBorder(),
+                          ),
+                          validator: (v) =>
+                              v == null || v.trim().isEmpty ? 'Informe o telefone' : null,
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _obsController,
+                          decoration: const InputDecoration(
+                            labelText: 'Observações (opcional)',
+                            border: OutlineInputBorder(),
+                          ),
+                          maxLines: 3,
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: action.isLoading
+                              ? null
+                              : () async {
+                                  if (!_formKey.currentState!.validate()) return;
+                                  if (_dataHora == null) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Selecione data e hora'),
+                                      ),
+                                    );
+                                    return;
+                                  }
+                                  await ref
+                                      .read(caronaActionControllerProvider.notifier)
+                                      .criar(
+                                        origem: _origemController.text.trim(),
+                                        destino: _destinoController.text.trim(),
+                                        dataHora: _dataHora!,
+                                        vagas: _parseIntOrNull(_vagasController.text)!,
+                                        valor: _parseDoubleOrNull(_valorController.text),
+                                        telefone: _telefoneController.text.trim(),
+                                        observacao: _obsController.text.trim(),
+                                      );
+                                  if (!context.mounted) return;
+                                  Navigator.of(context).pop();
+                                },
+                          child: action.isLoading
+                              ? const CircularProgressIndicator()
+                              : const Text('Publicar carona'),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                validator: (v) => v == null || v.trim().isEmpty ? 'Informe a origem' : null,
               ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _destinoController,
-                decoration: const InputDecoration(
-                  labelText: 'Destino',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (v) => v == null || v.trim().isEmpty ? 'Informe o destino' : null,
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                onPressed: _pickDateTime,
-                icon: const Icon(Icons.calendar_today),
-                label: Text(_dataHora == null
-                    ? 'Escolher data e hora'
-                    : '${_dataHora!.day.toString().padLeft(2, '0')}/'
-                      '${_dataHora!.month.toString().padLeft(2, '0')}/'
-                      '${_dataHora!.year} '
-                      '${_dataHora!.hour.toString().padLeft(2, '0')}:'
-                      '${_dataHora!.minute.toString().padLeft(2, '0')}'),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _vagasController,
-                decoration: const InputDecoration(
-                  labelText: 'Vagas',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-                validator: (v) {
-                  final parsed = _parseIntOrNull(v ?? '');
-                  if (parsed == null || parsed <= 0) return 'Informe um número válido';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _valorController,
-                decoration: const InputDecoration(
-                  labelText: 'Valor (opcional)',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _telefoneController,
-                decoration: const InputDecoration(
-                  labelText: 'Telefone para contato',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (v) => v == null || v.trim().isEmpty ? 'Informe o telefone' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _obsController,
-                decoration: const InputDecoration(
-                  labelText: 'Observações (opcional)',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: action.isLoading
-                    ? null
-                    : () async {
-                        if (!_formKey.currentState!.validate()) return;
-                        if (_dataHora == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Selecione data e hora')),
-                          );
-                          return;
-                        }
-                        await ref.read(caronaActionControllerProvider.notifier).criar(
-                              origem: _origemController.text.trim(),
-                              destino: _destinoController.text.trim(),
-                              dataHora: _dataHora!,
-                              vagas: _parseIntOrNull(_vagasController.text)!,
-                              valor: _parseDoubleOrNull(_valorController.text),
-                              telefone: _telefoneController.text.trim(),
-                              observacao: _obsController.text.trim(),
-                            );
-                        if (!context.mounted) return;
-                        Navigator.of(context).pop();
-                      },
-                child: action.isLoading
-                    ? const CircularProgressIndicator()
-                    : const Text('Publicar carona'),
-              ),
-            ],
+            ),
           ),
         ),
       ),
