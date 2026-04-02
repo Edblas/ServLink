@@ -5,6 +5,8 @@ import '../../providers/vaga_providers.dart';
 import '../../providers/whatsapp_providers.dart';
 import '../../widgets/professional_card.dart';
 import '../professional/professional_detail_page.dart';
+import '../professional/professional_list_page.dart';
+import '../vagas/vagas_page.dart';
 import '../vagas/vaga_detail_page.dart';
 
 class FavoritesPage extends ConsumerWidget {
@@ -69,7 +71,11 @@ class FavoritesPage extends ConsumerWidget {
                               const SizedBox(height: 12),
                               ElevatedButton(
                                 onPressed: () {
-                                  Navigator.of(context).pop();
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => const ProfessionalListPage(),
+                                    ),
+                                  );
                                 },
                                 child: const Text('Encontrar profissionais'),
                               ),
@@ -147,7 +153,11 @@ class FavoritesPage extends ConsumerWidget {
                               const SizedBox(height: 12),
                               ElevatedButton(
                                 onPressed: () {
-                                  Navigator.of(context).pop();
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => const VagasPage(),
+                                    ),
+                                  );
                                 },
                                 child: const Text('Ver vagas'),
                               ),

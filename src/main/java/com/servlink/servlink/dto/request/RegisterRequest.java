@@ -24,4 +24,14 @@ public class RegisterRequest {
     private String senha;
 
     private Role role;
+
+    private String cnpj;
+
+    private String endereco;
+
+    private String cep;
+
+    private String numero;
+
+    private String complemento;
 }

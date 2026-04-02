@@ -83,6 +83,22 @@ public class ProfissionalServiceImpl implements ProfissionalService {
         profissional.setInstagramUrl(request.getInstagramUrl());
         profissional.setTiktokUrl(request.getTiktokUrl());
         profissional.setSiteUrl(request.getSiteUrl());
+        profissional.setEndereco(request.getEndereco());
+        if (request.getCep() != null) {
+            String cep = request.getCep().replaceAll("[^0-9]", "").trim();
+            if (!cep.isEmpty() && cep.length() != 8) {
+                throw new IllegalArgumentException("CEP inválido");
+            }
+            profissional.setCep(cep.isEmpty() ? null : cep);
+        }
+        if (request.getNumero() != null) {
+            String numero = request.getNumero().trim();
+            profissional.setNumero(numero.isEmpty() ? null : numero);
+        }
+        if (request.getComplemento() != null) {
+            String complemento = request.getComplemento().trim();
+            profissional.setComplemento(complemento.isEmpty() ? null : complemento);
+        }
         profissional.setBairro(request.getBairro());
         profissional.setCarteiraMotorista(Boolean.FALSE);
         profissional.setPlano(request.getPlano());
@@ -241,6 +257,29 @@ public class ProfissionalServiceImpl implements ProfissionalService {
         if (request.getSiteUrl() != null) {
             String siteUrl = request.getSiteUrl().trim();
             profissional.setSiteUrl(siteUrl.isEmpty() ? null : siteUrl);
+        }
+
+        if (request.getEndereco() != null) {
+            String endereco = request.getEndereco().trim();
+            profissional.setEndereco(endereco.isEmpty() ? null : endereco);
+        }
+
+        if (request.getCep() != null) {
+            String cep = request.getCep().replaceAll("[^0-9]", "").trim();
+            if (!cep.isEmpty() && cep.length() != 8) {
+                throw new IllegalArgumentException("CEP inválido");
+            }
+            profissional.setCep(cep.isEmpty() ? null : cep);
+        }
+
+        if (request.getNumero() != null) {
+            String numero = request.getNumero().trim();
+            profissional.setNumero(numero.isEmpty() ? null : numero);
+        }
+
+        if (request.getComplemento() != null) {
+            String complemento = request.getComplemento().trim();
+            profissional.setComplemento(complemento.isEmpty() ? null : complemento);
         }
 
         if (request.getCidadeId() != null) {

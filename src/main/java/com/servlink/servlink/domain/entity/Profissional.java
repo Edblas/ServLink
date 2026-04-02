@@ -53,6 +53,18 @@ public class Profissional extends BaseEntity {
     private String siteUrl;
 
     @Column(length = 255)
+    private String endereco;
+
+    @Column(length = 8)
+    private String cep;
+
+    @Column(length = 20)
+    private String numero;
+
+    @Column(length = 120)
+    private String complemento;
+
+    @Column(length = 255)
     private String bairro;
 
     @Column(name = "carteira_motorista")

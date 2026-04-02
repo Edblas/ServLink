@@ -31,6 +31,14 @@ public class ProfissionalRequest {
 
     private String siteUrl;
 
+    private String endereco;
+
+    private String cep;
+
+    private String numero;
+
+    private String complemento;
+
     private String bairro;
 
     @NotNull

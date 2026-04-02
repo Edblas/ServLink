@@ -22,6 +22,11 @@ class RegisterRequestModel {
     required this.telefone,
     required this.senha,
     required this.role,
+    this.cnpj,
+    this.endereco,
+    this.cep,
+    this.numero,
+    this.complemento,
   });
 
   final String nome;
@@ -29,15 +34,26 @@ class RegisterRequestModel {
   final String telefone;
   final String senha;
   final String role;
+  final String? cnpj;
+  final String? endereco;
+  final String? cep;
+  final String? numero;
+  final String? complemento;
 
   Map<String, dynamic> toJson() {
-    return {
+    final json = <String, dynamic>{
       'nome': nome,
       'email': email,
       'telefone': telefone,
       'senha': senha,
       'role': role,
     };
+    if (cnpj != null) json['cnpj'] = cnpj;
+    if (endereco != null) json['endereco'] = endereco;
+    if (cep != null) json['cep'] = cep;
+    if (numero != null) json['numero'] = numero;
+    if (complemento != null) json['complemento'] = complemento;
+    return json;
   }
 }
 
@@ -66,4 +82,3 @@ class LoginResponseModel {
     );
   }
 }
-

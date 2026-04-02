@@ -1,0 +1,2 @@
+ALTER TABLE profissionais
+    ADD COLUMN IF NOT EXISTS endereco VARCHAR(255);

@@ -1,6 +1,8 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../core/config/app_config.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/catalog_providers.dart';
 import '../../providers/profissional_profile_providers.dart';
@@ -28,6 +30,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   final _instagramController = TextEditingController();
   final _tiktokController = TextEditingController();
   final _siteController = TextEditingController();
+  final _enderecoController = TextEditingController();
+  final _cepController = TextEditingController();
+  final _numeroController = TextEditingController();
+  final _complementoController = TextEditingController();
   final _bairroController = TextEditingController();
 
   bool _formInitialized = false;
@@ -50,6 +56,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     _instagramController.dispose();
     _tiktokController.dispose();
     _siteController.dispose();
+    _enderecoController.dispose();
+    _cepController.dispose();
+    _numeroController.dispose();
+    _complementoController.dispose();
     _bairroController.dispose();
     super.dispose();
   }
@@ -64,11 +74,19 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   Widget build(BuildContext context) {
     final state = ref.watch(authControllerProvider);
     final session = state.session;
-    final profissionalAsync = ref.watch(profissionalMeProvider);
-    String? fotoUrl;
-    profissionalAsync.whenData((p) {
-      fotoUrl = (p.fotoUrl ?? '').trim().isEmpty ? null : p.fotoUrl!.trim();
-    });
+    final isProfissional = session?.role == 'PROFISSIONAL';
+    final fotoUrl = isProfissional
+        ? ref.watch(profissionalMeProvider).maybeWhen(
+              data: (p) =>
+                  (p.fotoUrl ?? '').trim().isEmpty ? null : p.fotoUrl!.trim(),
+              orElse: () => null,
+            )
+        : null;
+    final avatarUrl = fotoUrl == null
+        ? null
+        : (fotoUrl.startsWith('http')
+            ? fotoUrl
+            : '${AppConfig.apiBaseUrl}${fotoUrl.startsWith('/') ? '' : '/'}$fotoUrl');
 
     final content = Scaffold(
       appBar: AppBar(
@@ -102,8 +120,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                               children: [
                                 CircleAvatar(
                                   radius: 32,
-                                  backgroundImage: fotoUrl != null ? NetworkImage(fotoUrl!) : null,
-                                  child: fotoUrl == null ? Text(session.nome.substring(0, 1)) : null,
+                                  backgroundImage:
+                                      avatarUrl != null ? NetworkImage(avatarUrl) : null,
+                                  child: avatarUrl == null
+                                      ? Text(session.nome.substring(0, 1))
+                                      : null,
                                 ),
                                 const SizedBox(width: 16),
                                 Column(
@@ -121,28 +142,66 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                                   ],
                                 ),
                                 const Spacer(),
-                                OutlinedButton.icon(
-                                  onPressed: _uploadingPhoto ? null : _changePhoto,
-                                  icon: _uploadingPhoto
-                                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                                      : const Icon(Icons.photo_camera_outlined),
-                                  label: const Text('Alterar foto'),
-                                ),
+                                if (isProfissional)
+                                  OutlinedButton.icon(
+                                    onPressed: _uploadingPhoto ? null : _changePhoto,
+                                    icon: _uploadingPhoto
+                                        ? const SizedBox(
+                                            width: 18,
+                                            height: 18,
+                                            child: CircularProgressIndicator(strokeWidth: 2),
+                                          )
+                                        : const Icon(Icons.photo_camera_outlined),
+                                    label: const Text('Alterar foto'),
+                                  ),
                               ],
                             ),
                           ),
                         ),
                         const SizedBox(height: 24),
-                        const Text(
-                          'Perfil profissional',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
+                        if (!isProfissional) ...[
+                          Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  const Text(
+                                    'Configurações',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  OutlinedButton.icon(
+                                    onPressed: () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) => const SettingsPage(),
+                                        ),
+                                      );
+                                    },
+                                    icon: const Icon(Icons.settings),
+                                    label: const Text('Abrir configurações'),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        _buildProfissionalForm(),
-                        const SizedBox(height: 24),
+                          const SizedBox(height: 24),
+                        ] else ...[
+                          const Text(
+                            'Perfil profissional',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          _buildProfissionalForm(),
+                          const SizedBox(height: 24),
+                        ],
                         if (!widget.isOnboarding)
                           ElevatedButton.icon(
                             onPressed: () async {
@@ -200,6 +259,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               _instagramController.text = profissional.instagramUrl ?? '';
               _tiktokController.text = profissional.tiktokUrl ?? '';
               _siteController.text = profissional.siteUrl ?? '';
+              _enderecoController.text = profissional.endereco ?? '';
+              _cepController.text = profissional.cep ?? '';
+              _numeroController.text = profissional.numero ?? '';
+              _complementoController.text = profissional.complemento ?? '';
               _carteiraMotorista = profissional.carteiraMotorista;
               _formInitialized = true;
             });
@@ -217,6 +280,15 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         }
         if ((profissional.tipoPagamento ?? '').trim().isEmpty) {
           missing.add('pagamento');
+        }
+        if ((profissional.endereco ?? '').trim().isEmpty) {
+          missing.add('endereço');
+        }
+        if ((profissional.cep ?? '').trim().isEmpty) {
+          missing.add('cep');
+        }
+        if ((profissional.numero ?? '').trim().isEmpty) {
+          missing.add('número');
         }
         if (profissional.cidadeId == null) {
           missing.add('cidade');
@@ -350,6 +422,57 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     _tipoPagamento = value;
                   });
                 },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _enderecoController,
+                decoration: const InputDecoration(
+                  labelText: 'Endereço',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Informe o endereço';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _cepController,
+                decoration: const InputDecoration(
+                  labelText: 'CEP',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  final digits = (value ?? '').replaceAll(RegExp(r'[^0-9]'), '');
+                  if (digits.isEmpty) return 'Informe o CEP';
+                  if (digits.length != 8) return 'CEP inválido';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _numeroController,
+                decoration: const InputDecoration(
+                  labelText: 'Número',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Informe o número';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _complementoController,
+                decoration: const InputDecoration(
+                  labelText: 'Complemento (opcional)',
+                  border: OutlineInputBorder(),
+                ),
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -525,6 +648,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         instagramUrl: _instagramController.text.trim(),
         tiktokUrl: _tiktokController.text.trim(),
         siteUrl: _siteController.text.trim(),
+        endereco: _enderecoController.text.trim(),
+        cep: _cepController.text.trim(),
+        numero: _numeroController.text.trim(),
+        complemento: _complementoController.text.trim(),
         bairro:
             _bairroController.text.trim().isEmpty ? '' : _bairroController.text.trim(),
         carteiraMotorista: _carteiraMotorista,
@@ -589,10 +716,31 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           const SnackBar(content: Text('Foto atualizada')),
         );
       }
-    } catch (_) {
+    } catch (e) {
+      var message = 'Falha ao enviar foto';
+      if (e is DioException) {
+        final status = e.response?.statusCode;
+        if (status == 401 || status == 403) {
+          message = 'Sessão expirada. Faça login novamente.';
+        } else if (status != null) {
+          message = 'Falha ao enviar foto (HTTP $status)';
+          final data = e.response?.data;
+          if (data is Map<String, dynamic>) {
+            final text = data['message'];
+            if (text is String && text.trim().isNotEmpty) {
+              message = text.trim();
+            }
+          }
+        } else if (e.type == DioExceptionType.connectionError ||
+            e.type == DioExceptionType.connectionTimeout ||
+            e.type == DioExceptionType.receiveTimeout ||
+            e.type == DioExceptionType.sendTimeout) {
+          message = 'Sem conexão com o servidor. Verifique sua internet.';
+        }
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Falha ao enviar foto')),
+          SnackBar(content: Text(message)),
         );
       }
     } finally {

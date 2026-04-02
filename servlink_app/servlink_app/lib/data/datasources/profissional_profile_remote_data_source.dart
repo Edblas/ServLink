@@ -30,6 +30,10 @@ class ProfissionalProfileRemoteDataSource {
     String? instagramUrl,
     String? tiktokUrl,
     String? siteUrl,
+    String? endereco,
+    String? cep,
+    String? numero,
+    String? complemento,
     String? bairro,
     bool? carteiraMotorista,
     int? cidadeId,
@@ -46,6 +50,10 @@ class ProfissionalProfileRemoteDataSource {
     if (instagramUrl != null) data['instagramUrl'] = instagramUrl;
     if (tiktokUrl != null) data['tiktokUrl'] = tiktokUrl;
     if (siteUrl != null) data['siteUrl'] = siteUrl;
+    if (endereco != null) data['endereco'] = endereco;
+    if (cep != null) data['cep'] = cep;
+    if (numero != null) data['numero'] = numero;
+    if (complemento != null) data['complemento'] = complemento;
     if (bairro != null) data['bairro'] = bairro;
     if (carteiraMotorista != null) data['carteiraMotorista'] = carteiraMotorista;
     if (cidadeId != null) data['cidadeId'] = cidadeId;

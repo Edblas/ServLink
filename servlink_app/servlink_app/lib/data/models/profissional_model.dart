@@ -14,6 +14,10 @@ class ProfissionalModel {
     required this.instagramUrl,
     required this.tiktokUrl,
     required this.siteUrl,
+    required this.endereco,
+    required this.cep,
+    required this.numero,
+    required this.complemento,
     required this.bairro,
     required this.carteiraMotorista,
     required this.plano,
@@ -36,6 +40,10 @@ class ProfissionalModel {
   final String? instagramUrl;
   final String? tiktokUrl;
   final String? siteUrl;
+  final String? endereco;
+  final String? cep;
+  final String? numero;
+  final String? complemento;
   final String? bairro;
   final bool? carteiraMotorista;
   final String plano;
@@ -59,6 +67,10 @@ class ProfissionalModel {
       instagramUrl: json['instagramUrl'] as String?,
       tiktokUrl: json['tiktokUrl'] as String?,
       siteUrl: json['siteUrl'] as String?,
+      endereco: json['endereco'] as String?,
+      cep: json['cep'] as String?,
+      numero: json['numero'] as String?,
+      complemento: json['complemento'] as String?,
       bairro: json['bairro'] as String?,
       carteiraMotorista: json['carteiraMotorista'] as bool?,
       plano: json['plano'] as String,
@@ -84,6 +96,10 @@ class ProfissionalModel {
       instagramUrl: instagramUrl,
       tiktokUrl: tiktokUrl,
       siteUrl: siteUrl,
+      endereco: endereco,
+      cep: cep,
+      numero: numero,
+      complemento: complemento,
       bairro: bairro,
       carteiraMotorista: carteiraMotorista ?? false,
       plano: plano,

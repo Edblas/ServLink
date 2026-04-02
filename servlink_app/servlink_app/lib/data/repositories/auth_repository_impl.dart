@@ -34,6 +34,11 @@ class AuthRepositoryImpl implements AuthRepository {
     required String telefone,
     required String senha,
     required String role,
+    String? cnpj,
+    String? endereco,
+    String? cep,
+    String? numero,
+    String? complemento,
   }) async {
     final response = await _remote.register(
       RegisterRequestModel(
@@ -42,6 +47,11 @@ class AuthRepositoryImpl implements AuthRepository {
         telefone: telefone,
         senha: senha,
         role: role,
+        cnpj: cnpj,
+        endereco: endereco,
+        cep: cep,
+        numero: numero,
+        complemento: complemento,
       ),
     );
     await _storage.saveAccessToken(response.accessToken);
@@ -58,4 +68,3 @@ class AuthRepositoryImpl implements AuthRepository {
     return _storage.clearAccessToken();
   }
 }
-

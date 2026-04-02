@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import '../../core/network/dio_client.dart';
@@ -55,7 +56,16 @@ class AuthController extends StateNotifier<AuthState> {
   Future<void> login(String email, String senha) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      final session = await _repository.login(email: email, senha: senha);
+      AuthSession session;
+      try {
+        session = await _repository
+            .login(email: email, senha: senha)
+            .timeout(const Duration(seconds: 60));
+      } on TimeoutException {
+        session = await _repository
+            .login(email: email, senha: senha)
+            .timeout(const Duration(seconds: 60));
+      }
       state = state.copyWith(session: session, isLoading: false);
     } catch (e) {
       state = state.copyWith(
@@ -71,16 +81,46 @@ class AuthController extends StateNotifier<AuthState> {
     required String telefone,
     required String senha,
     required String role,
+    String? cnpj,
+    String? endereco,
+    String? cep,
+    String? numero,
+    String? complemento,
   }) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      final session = await _repository.register(
-        nome: nome,
-        email: email,
-        telefone: telefone,
-        senha: senha,
-        role: role,
-      );
+      AuthSession session;
+      try {
+        session = await _repository
+            .register(
+              nome: nome,
+              email: email,
+              telefone: telefone,
+              senha: senha,
+              role: role,
+              cnpj: cnpj,
+              endereco: endereco,
+              cep: cep,
+              numero: numero,
+              complemento: complemento,
+            )
+            .timeout(const Duration(seconds: 60));
+      } on TimeoutException {
+        session = await _repository
+            .register(
+              nome: nome,
+              email: email,
+              telefone: telefone,
+              senha: senha,
+              role: role,
+              cnpj: cnpj,
+              endereco: endereco,
+              cep: cep,
+              numero: numero,
+              complemento: complemento,
+            )
+            .timeout(const Duration(seconds: 60));
+      }
       state = state.copyWith(session: session, isLoading: false);
     } catch (e) {
       state = state.copyWith(
@@ -110,9 +150,18 @@ class AuthController extends StateNotifier<AuthState> {
 }
 
 String _mapAuthError(Object error, {required String defaultMessage}) {
+  if (error is TimeoutException) {
+    return 'Servidor demorou para responder. Tente novamente.';
+  }
   if (error is DioException) {
     final baseUrl = error.requestOptions.baseUrl;
     final status = error.response?.statusCode;
+    if (error.error is SocketException) {
+      if (baseUrl.trim().isEmpty) {
+        return 'Sem conexão com o servidor. Verifique sua internet.';
+      }
+      return 'Sem conexão com o servidor ($baseUrl). Verifique sua internet.';
+    }
     if (status == 401 || status == 403) {
       return 'Email ou senha inválidos';
     }
@@ -139,6 +188,11 @@ String _mapAuthError(Object error, {required String defaultMessage}) {
           return errorText.trim();
         }
       }
+      return '$defaultMessage (HTTP $status)';
+    }
+
+    if (status != null && status >= 500) {
+      return 'Servidor indisponível (HTTP $status). Tente novamente.';
     }
 
     if (error.type == DioExceptionType.connectionError ||
@@ -152,6 +206,9 @@ String _mapAuthError(Object error, {required String defaultMessage}) {
     }
 
     if (baseUrl.trim().isNotEmpty) {
+      if (status != null) {
+        return '$defaultMessage (HTTP $status, $baseUrl)';
+      }
       return '$defaultMessage ($baseUrl)';
     }
   }

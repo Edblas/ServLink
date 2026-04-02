@@ -7,19 +7,26 @@ class DioClient {
     dio = Dio(
       BaseOptions(
         baseUrl: AppConfig.apiBaseUrl,
-        connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 10),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+        headers: {'Accept': 'application/json'},
       ),
     );
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          final token = await _storage.getAccessToken();
-          if (token != null && token.isNotEmpty) {
-            options.headers['Authorization'] = 'Bearer $token';
+          final path = options.path;
+          final isAuthRoute =
+              path.startsWith('/api/auth/') || path.startsWith('/api/health');
+          if (!isAuthRoute) {
+            try {
+              final token = await _storage
+                  .getAccessToken()
+                  .timeout(const Duration(seconds: 2));
+              if (token != null && token.isNotEmpty) {
+                options.headers['Authorization'] = 'Bearer $token';
+              }
+            } catch (_) {}
           }
           handler.next(options);
         },

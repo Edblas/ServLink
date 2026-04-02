@@ -28,6 +28,10 @@ public class ProfissionalResponse {
     private String instagramUrl;
     private String tiktokUrl;
     private String siteUrl;
+    private String endereco;
+    private String cep;
+    private String numero;
+    private String complemento;
     private String bairro;
     private Boolean carteiraMotorista;
     private Plano plano;

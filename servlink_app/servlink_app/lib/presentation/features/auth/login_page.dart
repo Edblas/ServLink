@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:async';
 import '../../providers/auth_providers.dart';
 import '../../providers/profissional_profile_providers.dart';
 import '../city/city_selection_page.dart';
@@ -38,7 +39,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       if (session.role == 'PROFISSIONAL') {
         try {
           final remote = ref.read(profissionalProfileRemoteProvider);
-          final model = await remote.criarOuObter();
+          final model = await remote
+              .criarOuObter()
+              .timeout(const Duration(seconds: 60));
           final entity = model.toEntity();
           if (!mounted) return;
           if (!entity.isPerfilProfissionalCompleto) {

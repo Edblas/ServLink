@@ -12,6 +12,10 @@ class ProfissionalEntity {
     required this.instagramUrl,
     required this.tiktokUrl,
     required this.siteUrl,
+    required this.endereco,
+    required this.cep,
+    required this.numero,
+    required this.complemento,
     required this.bairro,
     required this.carteiraMotorista,
     required this.plano,
@@ -34,6 +38,10 @@ class ProfissionalEntity {
   final String? instagramUrl;
   final String? tiktokUrl;
   final String? siteUrl;
+  final String? endereco;
+  final String? cep;
+  final String? numero;
+  final String? complemento;
   final String? bairro;
   final bool carteiraMotorista;
   final String plano;
@@ -48,9 +56,19 @@ class ProfissionalEntity {
         descricao.trim().toLowerCase() != 'atualize seu perfil';
     final idadeOk = idade != null && idade! > 0;
     final pagamentoOk = (tipoPagamento ?? '').trim().isNotEmpty;
+    final enderecoOk = (endereco ?? '').trim().isNotEmpty;
+    final cepOk = (cep ?? '').trim().isNotEmpty;
+    final numeroOk = (numero ?? '').trim().isNotEmpty;
     final cidadeOk = cidadeId != null;
     final categoriaOk = categoriaId != null;
-    return descricaoOk && idadeOk && pagamentoOk && cidadeOk && categoriaOk;
+    return descricaoOk &&
+        idadeOk &&
+        pagamentoOk &&
+        enderecoOk &&
+        cepOk &&
+        numeroOk &&
+        cidadeOk &&
+        categoriaOk;
   }
 
   double get percentualPerfilCompleto {
@@ -68,6 +86,15 @@ class ProfissionalEntity {
 
     total++;
     if ((tipoPagamento ?? '').trim().isNotEmpty) ok++;
+
+    total++;
+    if ((endereco ?? '').trim().isNotEmpty) ok++;
+
+    total++;
+    if ((cep ?? '').trim().isNotEmpty) ok++;
+
+    total++;
+    if ((numero ?? '').trim().isNotEmpty) ok++;
 
     total++;
     if (cidadeId != null) ok++;

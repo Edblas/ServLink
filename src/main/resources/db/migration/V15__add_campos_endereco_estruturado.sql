@@ -1,0 +1,17 @@
+ALTER TABLE profissionais
+    ADD COLUMN IF NOT EXISTS cep VARCHAR(8);
+
+ALTER TABLE profissionais
+    ADD COLUMN IF NOT EXISTS numero VARCHAR(20);
+
+ALTER TABLE profissionais
+    ADD COLUMN IF NOT EXISTS complemento VARCHAR(120);
+
+ALTER TABLE clientes
+    ADD COLUMN IF NOT EXISTS cep VARCHAR(8);
+
+ALTER TABLE clientes
+    ADD COLUMN IF NOT EXISTS numero VARCHAR(20);
+
+ALTER TABLE clientes
+    ADD COLUMN IF NOT EXISTS complemento VARCHAR(120);

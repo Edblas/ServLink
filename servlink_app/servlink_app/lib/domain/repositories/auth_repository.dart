@@ -12,8 +12,12 @@ abstract class AuthRepository {
     required String telefone,
     required String senha,
     required String role,
+    String? cnpj,
+    String? endereco,
+    String? cep,
+    String? numero,
+    String? complemento,
   });
 
   Future<void> logout();
 }
-
