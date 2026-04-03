@@ -1,5 +1,7 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/catalog_providers.dart';
 import '../../providers/profissional_profile_providers.dart';
@@ -32,6 +34,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   String _tipoPagamento = 'DIARIA';
   bool _carteiraMotorista = false;
   bool _isEmpresa = false;
+  bool _cepLookupLoading = false;
+  String _lastCepLookup = '';
 
   @override
   void dispose() {
@@ -53,6 +57,76 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     final trimmed = value.trim();
     if (trimmed.isEmpty) return null;
     return int.tryParse(trimmed);
+  }
+
+  Future<void> _tryLookupCep(String rawCep) async {
+    final cep = rawCep.replaceAll(RegExp(r'[^0-9]'), '');
+    if (cep.length != 8) return;
+    if (_lastCepLookup == cep) return;
+    _lastCepLookup = cep;
+
+    setState(() {
+      _cepLookupLoading = true;
+    });
+
+    try {
+      final response = await Dio()
+          .get<Map<String, dynamic>>('https://viacep.com.br/ws/$cep/json/')
+          .timeout(const Duration(seconds: 8));
+      final data = response.data ?? <String, dynamic>{};
+      if (data['erro'] == true) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('CEP não encontrado')),
+        );
+        return;
+      }
+
+      final logradouro = (data['logradouro'] as String?)?.trim() ?? '';
+      final bairro = (data['bairro'] as String?)?.trim() ?? '';
+      final localidade = (data['localidade'] as String?)?.trim() ?? '';
+      final uf = (data['uf'] as String?)?.trim() ?? '';
+
+      final enderecoParts = <String>[];
+      if (logradouro.isNotEmpty) enderecoParts.add(logradouro);
+      if (bairro.isNotEmpty) enderecoParts.add(bairro);
+      if (enderecoParts.isNotEmpty) {
+        _enderecoController.text = enderecoParts.join(' - ');
+      }
+
+      if (localidade.isNotEmpty && uf.isNotEmpty) {
+        try {
+          final cidades = await ref.read(cidadesProvider.future);
+          final localidadeLower = localidade.toLowerCase();
+          final ufUpper = uf.toUpperCase();
+          final match = cidades.where((c) {
+            return c.nome.trim().toLowerCase() == localidadeLower &&
+                c.estado.trim().toUpperCase() == ufUpper;
+          }).toList();
+          if (match.isNotEmpty) {
+            setState(() {
+              _cidadeId = match.first.id;
+            });
+          }
+        } catch (_) {}
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Endereço preenchido pelo CEP')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Falha ao consultar CEP')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _cepLookupLoading = false;
+        });
+      }
+    }
   }
 
   Future<void> _submit() async {
@@ -208,6 +282,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                 prefixIcon: Icon(Icons.phone_outlined),
                               ),
                               keyboardType: TextInputType.phone,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(13),
+                              ],
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
                                   return 'Informe o telefone';
@@ -280,11 +358,35 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                             const SizedBox(height: 16),
                             TextFormField(
                               controller: _cepController,
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 labelText: 'CEP',
-                                prefixIcon: Icon(Icons.location_on_outlined),
+                                prefixIcon: const Icon(Icons.location_on_outlined),
+                                suffixIcon: _cepLookupLoading
+                                    ? const Padding(
+                                        padding: EdgeInsets.all(12),
+                                        child: SizedBox(
+                                          width: 18,
+                                          height: 18,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        ),
+                                      )
+                                    : IconButton(
+                                        onPressed: () async {
+                                          await _tryLookupCep(_cepController.text);
+                                        },
+                                        icon: const Icon(Icons.search),
+                                      ),
                               ),
                               keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(8),
+                              ],
+                              onChanged: (value) async {
+                                await _tryLookupCep(value);
+                              },
                               validator: (value) {
                                 final digits =
                                     (value ?? '').replaceAll(RegExp(r'[^0-9]'), '');

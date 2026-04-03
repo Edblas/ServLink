@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:io';
 import 'package:dio/dio.dart';
 import '../config/app_config.dart';
 import '../storage/secure_storage_service.dart';
@@ -9,6 +11,7 @@ class DioClient {
         baseUrl: AppConfig.apiBaseUrl,
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
+        sendTimeout: const Duration(seconds: 30),
         headers: {'Accept': 'application/json'},
       ),
     );
@@ -32,8 +35,45 @@ class DioClient {
         },
       ),
     );
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onError: (error, handler) async {
+          final request = error.requestOptions;
+          final shouldRetry = _shouldRetry(error);
+          final attempt = (request.extra['retry_attempt'] as int?) ?? 0;
+          if (shouldRetry && attempt < 2) {
+            const delays = [Duration(seconds: 1), Duration(seconds: 2)];
+            await Future.delayed(delays[attempt]);
+            request.extra['retry_attempt'] = attempt + 1;
+            try {
+              final response = await dio.fetch(request);
+              return handler.resolve(response);
+            } catch (_) {
+              return handler.next(error);
+            }
+          }
+          handler.next(error);
+        },
+      ),
+    );
   }
 
   late final Dio dio;
   final SecureStorageService _storage;
+
+  bool _shouldRetry(DioException error) {
+    if (error.type == DioExceptionType.connectionTimeout ||
+        error.type == DioExceptionType.receiveTimeout ||
+        error.type == DioExceptionType.sendTimeout) {
+      return true;
+    }
+    final status = error.response?.statusCode ?? 0;
+    if (status == 502 || status == 503 || status == 504) {
+      return true;
+    }
+    if (error.error is SocketException) {
+      return true;
+    }
+    return false;
+  }
 }

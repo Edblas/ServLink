@@ -1,13 +1,16 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/config/app_config.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/catalog_providers.dart';
 import '../../providers/profissional_profile_providers.dart';
 import '../city/city_selection_page.dart';
 import '../auth/login_page.dart';
+import '../professional/professional_detail_page.dart';
 import '../settings/settings_page.dart';
 
 class ProfilePage extends ConsumerStatefulWidget {
@@ -40,6 +43,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   bool _saving = false;
   bool _uploadingPhoto = false;
   bool _carteiraMotorista = false;
+  bool _cepLookupLoading = false;
+  String _lastCepLookup = '';
 
   int? _cidadeId;
   int? _categoriaId;
@@ -68,6 +73,121 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final trimmed = value.trim();
     if (trimmed.isEmpty) return null;
     return int.tryParse(trimmed);
+  }
+
+  Future<void> _copyToClipboard({
+    required BuildContext context,
+    required String label,
+    required String value,
+  }) async {
+    final v = value.trim();
+    if (v.isEmpty) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$label vazio')),
+      );
+      return;
+    }
+    await Clipboard.setData(ClipboardData(text: v));
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('$label copiado')),
+    );
+  }
+
+  static String? _normalizeSite(String? value) {
+    final raw = (value ?? '').trim();
+    if (raw.isEmpty) return null;
+    if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
+    return 'https://$raw';
+  }
+
+  Future<void> _openExternalUrl(BuildContext context, String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri == null) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Link inválido')),
+      );
+      return;
+    }
+    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!context.mounted) return;
+    if (!ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Não foi possível abrir o link')),
+      );
+    }
+  }
+
+  Future<void> _tryLookupCep(String rawCep) async {
+    final cep = rawCep.replaceAll(RegExp(r'[^0-9]'), '');
+    if (cep.length != 8) return;
+    if (_lastCepLookup == cep) return;
+    _lastCepLookup = cep;
+
+    setState(() {
+      _cepLookupLoading = true;
+    });
+
+    try {
+      final response = await Dio()
+          .get<Map<String, dynamic>>('https://viacep.com.br/ws/$cep/json/')
+          .timeout(const Duration(seconds: 8));
+      final data = response.data ?? <String, dynamic>{};
+      if (data['erro'] == true) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('CEP não encontrado')),
+        );
+        return;
+      }
+
+      final logradouro = (data['logradouro'] as String?)?.trim() ?? '';
+      final bairro = (data['bairro'] as String?)?.trim() ?? '';
+      final localidade = (data['localidade'] as String?)?.trim() ?? '';
+      final uf = (data['uf'] as String?)?.trim() ?? '';
+
+      if (logradouro.isNotEmpty) {
+        _enderecoController.text = logradouro;
+      }
+      if (bairro.isNotEmpty) {
+        _bairroController.text = bairro;
+      }
+
+      if (localidade.isNotEmpty && uf.isNotEmpty) {
+        try {
+          final cidades = await ref.read(cidadesProvider.future);
+          final localidadeLower = localidade.toLowerCase();
+          final ufUpper = uf.toUpperCase();
+          final match = cidades.where((c) {
+            return c.nome.trim().toLowerCase() == localidadeLower &&
+                c.estado.trim().toUpperCase() == ufUpper;
+          }).toList();
+          if (match.isNotEmpty) {
+            setState(() {
+              _cidadeId = match.first.id;
+            });
+          }
+        } catch (_) {}
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Endereço preenchido pelo CEP')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Falha ao consultar CEP')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _cepLookupLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -316,6 +436,118 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 Text('Falta: ${missing.join(', ')}'),
               ],
               const SizedBox(height: 16),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  Chip(label: Text('Plano: ${profissional.plano}')),
+                  Chip(
+                    label: Text(
+                      'Avaliação: ${profissional.mediaAvaliacoes.toStringAsFixed(1)}',
+                    ),
+                  ),
+                  if ((profissional.tipoPagamento ?? '').trim().isNotEmpty)
+                    Chip(
+                      label: Text(
+                        'Pagamento: ${profissional.tipoPagamento == 'DIARIA' ? 'Diária' : 'Empreita'}',
+                      ),
+                    ),
+                  if (profissional.cidadeId != null && profissional.cidade.trim().isNotEmpty)
+                    Chip(label: Text('Cidade: ${profissional.cidade}')),
+                  if (profissional.categoriaId != null &&
+                      profissional.categoria.trim().isNotEmpty)
+                    Chip(label: Text('Categoria: ${profissional.categoria}')),
+                  if ((profissional.endereco ?? '').trim().isNotEmpty)
+                    Chip(
+                      label: Text(
+                        'Endereço: ${(profissional.endereco ?? '').trim()}',
+                      ),
+                    ),
+                  if ((profissional.cep ?? '').trim().isNotEmpty ||
+                      (profissional.numero ?? '').trim().isNotEmpty)
+                    Chip(
+                      label: Text(
+                        'CEP/Nº: ${(profissional.cep ?? '').trim()} ${(profissional.numero ?? '').trim()}',
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => ProfessionalDetailPage(
+                            profissional: profissional,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.visibility_outlined),
+                    label: const Text('Ver perfil público'),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      await _copyToClipboard(
+                        context: context,
+                        label: 'Telefone',
+                        value: profissional.telefone,
+                      );
+                    },
+                    icon: const Icon(Icons.copy),
+                    label: const Text('Copiar telefone'),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      await _copyToClipboard(
+                        context: context,
+                        label: 'Email',
+                        value: profissional.email,
+                      );
+                    },
+                    icon: const Icon(Icons.copy),
+                    label: const Text('Copiar email'),
+                  ),
+                  if ((profissional.instagramUrl ?? '').trim().isNotEmpty)
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        final raw = profissional.instagramUrl!.trim();
+                        final url = raw.startsWith('@')
+                            ? 'https://instagram.com/${raw.substring(1)}'
+                            : _normalizeSite(raw);
+                        if (url == null) return;
+                        await _openExternalUrl(context, url);
+                      },
+                      icon: const Icon(Icons.open_in_new),
+                      label: const Text('Instagram'),
+                    ),
+                  if ((profissional.tiktokUrl ?? '').trim().isNotEmpty)
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        final url = _normalizeSite(profissional.tiktokUrl);
+                        if (url == null) return;
+                        await _openExternalUrl(context, url);
+                      },
+                      icon: const Icon(Icons.open_in_new),
+                      label: const Text('TikTok'),
+                    ),
+                  if ((profissional.siteUrl ?? '').trim().isNotEmpty)
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        final url = _normalizeSite(profissional.siteUrl);
+                        if (url == null) return;
+                        await _openExternalUrl(context, url);
+                      },
+                      icon: const Icon(Icons.open_in_new),
+                      label: const Text('Site'),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _nomeController,
                 decoration: const InputDecoration(
@@ -337,6 +569,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.phone,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(13),
+                ],
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Informe seu telefone';
@@ -440,11 +676,33 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _cepController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'CEP',
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
+                  suffixIcon: _cepLookupLoading
+                      ? const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
+                      : IconButton(
+                          onPressed: () async {
+                            await _tryLookupCep(_cepController.text);
+                          },
+                          icon: const Icon(Icons.search),
+                        ),
                 ),
                 keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(8),
+                ],
+                onChanged: (value) async {
+                  await _tryLookupCep(value);
+                },
                 validator: (value) {
                   final digits = (value ?? '').replaceAll(RegExp(r'[^0-9]'), '');
                   if (digits.isEmpty) return 'Informe o CEP';
