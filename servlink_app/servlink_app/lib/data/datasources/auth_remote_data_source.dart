@@ -24,5 +24,18 @@ class AuthRemoteDataSource {
     );
     return LoginResponseModel.fromJson(response.data as Map<String, dynamic>);
   }
-}
 
+  Future<void> forgotPassword(ForgotPasswordRequestModel request) async {
+    await _dio.post(
+      '/api/auth/forgot-password',
+      data: request.toJson(),
+    );
+  }
+
+  Future<void> resetPassword(ResetPasswordRequestModel request) async {
+    await _dio.post(
+      '/api/auth/reset-password',
+      data: request.toJson(),
+    );
+  }
+}

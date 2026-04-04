@@ -33,4 +33,9 @@ class CatalogRepositoryImpl implements CatalogRepository {
     );
     return result.map((e) => e.toEntity()).toList();
   }
+
+  @override
+  Future<Map<int, int>> contarProfissionaisPorCategoria({int? cidadeId}) {
+    return _remote.contarProfissionaisPorCategoria(cidadeId: cidadeId);
+  }
 }

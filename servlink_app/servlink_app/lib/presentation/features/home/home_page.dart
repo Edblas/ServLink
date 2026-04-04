@@ -105,6 +105,7 @@ class CategoriesTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final categoriasAsync = ref.watch(categoriasProvider);
     final cidade = ref.watch(cidadeSelecionadaProvider);
+    final countsAsync = ref.watch(categoriaCountsProvider);
     final brightness = Theme.of(context).brightness;
 
     final backgroundColor =
@@ -116,6 +117,10 @@ class CategoriesTab extends ConsumerWidget {
         child: categoriasAsync.when(
           data: (categorias) {
             final featured = _featuredCategories(categorias);
+            final counts = countsAsync.maybeWhen(
+              data: (m) => m,
+              orElse: () => const <int, int>{},
+            );
             return CustomScrollView(
               slivers: [
                 SliverPadding(
@@ -174,12 +179,13 @@ class CategoriesTab extends ConsumerWidget {
                       separatorBuilder: (_, __) => const SizedBox(width: 12),
                       itemBuilder: (context, index) {
                         final categoria = featured[index];
+                        final count = counts[categoria.id] ?? 0;
                         return SizedBox(
                           width: 230,
                           child: CategoryCard(
                             title: categoria.nome,
                             subtitle:
-                                '+${_countFor(categoria.nome)} profissionais disponíveis',
+                                '+$count profissionais disponíveis',
                             icon: _iconFor(categoria.nome),
                             badgeText: _isAvailableNow(categoria.nome)
                                 ? 'Disponível agora'
@@ -214,10 +220,11 @@ class CategoriesTab extends ConsumerWidget {
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
                         final categoria = categorias[index];
+                        final count = counts[categoria.id] ?? 0;
                         return CategoryCard(
                           title: categoria.nome,
                           subtitle:
-                              '+${_countFor(categoria.nome)} profissionais disponíveis',
+                              '+$count profissionais disponíveis',
                           icon: _iconFor(categoria.nome),
                           badgeText: _isAvailableNow(categoria.nome)
                               ? 'Disponível agora'
@@ -268,30 +275,6 @@ class CategoriesTab extends ConsumerWidget {
     if (found.isNotEmpty) return found.take(3).toList();
 
     return categorias.take(3).toList();
-  }
-
-  int _countFor(String categoriaNome) {
-    final key = categoriaNome.trim().toLowerCase();
-    const counts = {
-      'programador': 38,
-      'professor': 24,
-      'manicure': 19,
-      'contador': 12,
-      'cozinheiro': 17,
-      'dentista': 9,
-      'médico': 14,
-      'medico': 14,
-      'enfermeiro': 11,
-      'babá': 16,
-      'baba': 16,
-      'jardineiro': 15,
-      'diarista': 22,
-      'eletricista': 18,
-    };
-
-    final mapped = counts[key];
-    if (mapped != null) return mapped;
-    return 10 + (key.hashCode.abs() % 31);
   }
 
   bool _isAvailableNow(String categoriaNome) {

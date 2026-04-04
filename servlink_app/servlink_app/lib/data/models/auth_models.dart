@@ -57,6 +57,35 @@ class RegisterRequestModel {
   }
 }
 
+class ForgotPasswordRequestModel {
+  ForgotPasswordRequestModel({required this.email});
+
+  final String email;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'email': email,
+    };
+  }
+}
+
+class ResetPasswordRequestModel {
+  ResetPasswordRequestModel({
+    required this.token,
+    required this.novaSenha,
+  });
+
+  final String token;
+  final String novaSenha;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'token': token,
+      'novaSenha': novaSenha,
+    };
+  }
+}
+
 class LoginResponseModel {
   LoginResponseModel({
     required this.accessToken,

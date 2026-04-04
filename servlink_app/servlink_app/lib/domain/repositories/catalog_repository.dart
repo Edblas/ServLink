@@ -12,4 +12,6 @@ abstract class CatalogRepository {
     String? q,
     String? bairro,
   });
+
+  Future<Map<int, int>> contarProfissionaisPorCategoria({int? cidadeId});
 }

@@ -62,3 +62,9 @@ final profissionaisProvider = FutureProvider.autoDispose
     bairro: bairro,
   );
 });
+
+final categoriaCountsProvider = FutureProvider.autoDispose<Map<int, int>>((ref) async {
+  final cidade = ref.watch(cidadeSelecionadaProvider);
+  final repository = ref.read(catalogRepositoryProvider);
+  return repository.contarProfissionaisPorCategoria(cidadeId: cidade?.id);
+});

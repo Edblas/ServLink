@@ -18,6 +18,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _sendingReset = false;
+  bool _resettingPassword = false;
 
   @override
   void dispose() {
@@ -65,14 +67,160 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
   }
 
+  Future<void> _openForgotPasswordDialog() async {
+    final controller = TextEditingController(text: _emailController.text.trim());
+    final rootContext = context;
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Recuperar senha'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(labelText: 'Email'),
+            keyboardType: TextInputType.emailAddress,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: _sendingReset
+                  ? null
+                  : () async {
+                      setState(() {
+                        _sendingReset = true;
+                      });
+                      try {
+                        final repo = ref.read(authRepositoryProvider);
+                        await repo.forgotPassword(
+                          email: controller.text.trim().toLowerCase(),
+                        );
+                        if (!mounted || !dialogContext.mounted) return;
+                        Navigator.of(dialogContext).pop();
+                        ScaffoldMessenger.of(rootContext).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Se o email existir, enviamos um código de recuperação.',
+                            ),
+                          ),
+                        );
+                      } catch (_) {
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(rootContext).showSnackBar(
+                          const SnackBar(content: Text('Falha ao solicitar recuperação')),
+                        );
+                      } finally {
+                        if (mounted) {
+                          setState(() {
+                            _sendingReset = false;
+                          });
+                        }
+                      }
+                    },
+              child: _sendingReset
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Enviar código'),
+            ),
+          ],
+        );
+      },
+    );
+    controller.dispose();
+  }
+
+  Future<void> _openResetPasswordDialog() async {
+    final tokenController = TextEditingController();
+    final passwordController = TextEditingController();
+    final rootContext = context;
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Redefinir senha'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: tokenController,
+                decoration: const InputDecoration(labelText: 'Código'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: passwordController,
+                decoration: const InputDecoration(labelText: 'Nova senha'),
+                obscureText: true,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: _resettingPassword
+                  ? null
+                  : () async {
+                      setState(() {
+                        _resettingPassword = true;
+                      });
+                      try {
+                        final token = tokenController.text.trim();
+                        final senha = passwordController.text;
+                        if (token.isEmpty || senha.length < 6) {
+                          if (!mounted) return;
+                          ScaffoldMessenger.of(rootContext).showSnackBar(
+                            const SnackBar(content: Text('Informe código e senha válida')),
+                          );
+                          return;
+                        }
+                        final repo = ref.read(authRepositoryProvider);
+                        await repo.resetPassword(token: token, novaSenha: senha);
+                        if (!mounted || !dialogContext.mounted) return;
+                        Navigator.of(dialogContext).pop();
+                        ScaffoldMessenger.of(rootContext).showSnackBar(
+                          const SnackBar(content: Text('Senha atualizada')),
+                        );
+                      } catch (_) {
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(rootContext).showSnackBar(
+                          const SnackBar(content: Text('Falha ao redefinir senha')),
+                        );
+                      } finally {
+                        if (mounted) {
+                          setState(() {
+                            _resettingPassword = false;
+                          });
+                        }
+                      }
+                    },
+              child: _resettingPassword
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Confirmar'),
+            ),
+          ],
+        );
+      },
+    );
+    tokenController.dispose();
+    passwordController.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Entrar'),
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -172,6 +320,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   );
                 },
                 child: const Text('Criar conta'),
+              ),
+              TextButton(
+                onPressed: _sendingReset ? null : _openForgotPasswordDialog,
+                child: const Text('Esqueci minha senha'),
+              ),
+              TextButton(
+                onPressed: _resettingPassword ? null : _openResetPasswordDialog,
+                child: const Text('Já tenho o código'),
               ),
             ],
           ),

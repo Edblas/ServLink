@@ -19,5 +19,12 @@ abstract class AuthRepository {
     String? complemento,
   });
 
+  Future<void> forgotPassword({required String email});
+
+  Future<void> resetPassword({
+    required String token,
+    required String novaSenha,
+  });
+
   Future<void> logout();
 }

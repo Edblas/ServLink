@@ -51,4 +51,24 @@ class CatalogRemoteDataSource {
         .map((e) => ProfissionalModel.fromJson(e as Map<String, dynamic>))
         .toList();
   }
+
+  Future<Map<int, int>> contarProfissionaisPorCategoria({int? cidadeId}) async {
+    final queryParameters = <String, dynamic>{};
+    if (cidadeId != null) {
+      queryParameters['cidadeId'] = cidadeId;
+    }
+    final response = await _dio.get(
+      '/api/categorias/counts',
+      queryParameters: queryParameters,
+    );
+    final list = response.data as List<dynamic>;
+    final map = <int, int>{};
+    for (final item in list) {
+      final json = item as Map<String, dynamic>;
+      final categoriaId = (json['categoriaId'] as num).toInt();
+      final quantidade = (json['quantidade'] as num).toInt();
+      map[categoriaId] = quantidade;
+    }
+    return map;
+  }
 }
