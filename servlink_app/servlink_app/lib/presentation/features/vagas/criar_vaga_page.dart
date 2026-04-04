@@ -21,6 +21,7 @@ class _CriarVagaPageState extends ConsumerState<CriarVagaPage> {
   int? _categoriaId;
   String _urgencia = 'FLEXIVEL';
   String _tipo = 'BICO';
+  int? _diasExpiracao;
 
   @override
   void dispose() {
@@ -79,6 +80,7 @@ class _CriarVagaPageState extends ConsumerState<CriarVagaPage> {
             urgencia: _urgencia,
             tipo: _tipo,
             categoriaId: categoriaId,
+            diasExpiracao: _diasExpiracao,
           );
       if (!mounted) return;
       Navigator.of(context).pop();
@@ -229,6 +231,26 @@ class _CriarVagaPageState extends ConsumerState<CriarVagaPage> {
                                 if (value == null) return;
                                 setState(() {
                                   _tipo = value;
+                                  _diasExpiracao ??= _tipo == 'BICO' ? 7 : 30;
+                                });
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            DropdownButtonFormField<int?>(
+                              value: _diasExpiracao ?? (_tipo == 'BICO' ? 7 : 30),
+                              decoration: const InputDecoration(
+                                labelText: 'Expira em',
+                                border: OutlineInputBorder(),
+                              ),
+                              items: const [
+                                DropdownMenuItem(value: 7, child: Text('7 dias')),
+                                DropdownMenuItem(value: 15, child: Text('15 dias')),
+                                DropdownMenuItem(value: 30, child: Text('30 dias')),
+                                DropdownMenuItem(value: 60, child: Text('60 dias')),
+                              ],
+                              onChanged: (value) {
+                                setState(() {
+                                  _diasExpiracao = value;
                                 });
                               },
                             ),

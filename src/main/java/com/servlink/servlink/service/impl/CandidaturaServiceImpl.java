@@ -60,6 +60,13 @@ public class CandidaturaServiceImpl implements CandidaturaService {
         Vaga vaga = vagaRepository.findById(vagaId)
                 .orElseThrow(() -> new IllegalArgumentException("Vaga não encontrada"));
 
+        if (vaga.getEmpresa() != null
+                && vaga.getEmpresa().getUsuario() != null
+                && vaga.getEmpresa().getUsuario().getId() != null
+                && vaga.getEmpresa().getUsuario().getId().equals(usuario.getId())) {
+            throw new IllegalArgumentException("Você não pode se candidatar na sua própria vaga");
+        }
+
         if (vaga.getStatus() != VagaStatus.ABERTA) {
             throw new IllegalArgumentException("Vaga não está aberta para candidaturas");
         }

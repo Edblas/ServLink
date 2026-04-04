@@ -1,6 +1,8 @@
 package com.servlink.servlink.repository;
 
 import com.servlink.servlink.domain.entity.Profissional;
+import com.servlink.servlink.dto.response.CategoriaCountResponse;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,4 +36,18 @@ public interface ProfissionalRepository extends JpaRepository<Profissional, Long
             @Param("q") String q,
             @Param("bairro") String bairro,
             Pageable pageable);
+
+    @Query("""
+            SELECT new com.servlink.servlink.dto.response.CategoriaCountResponse(
+              c.id,
+              COUNT(p.id)
+            )
+            FROM Profissional p
+            JOIN p.categoria c
+            LEFT JOIN p.cidade ci
+            WHERE (:cidadeId IS NULL OR ci.id = :cidadeId)
+              AND p.ativo = TRUE
+            GROUP BY c.id
+            """)
+    List<CategoriaCountResponse> countByCategoria(@Param("cidadeId") Long cidadeId);
 }

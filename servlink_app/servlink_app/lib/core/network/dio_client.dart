@@ -58,6 +58,14 @@ class DioClient {
   late final Dio dio;
   final SecureStorageService _storage;
 
+  void setAccessToken(String? token) {
+    if (token == null || token.trim().isEmpty) {
+      dio.options.headers.remove('Authorization');
+      return;
+    }
+    dio.options.headers['Authorization'] = 'Bearer ${token.trim()}';
+  }
+
   bool _shouldRetry(DioException error) {
     if (error.type == DioExceptionType.connectionTimeout ||
         error.type == DioExceptionType.receiveTimeout ||

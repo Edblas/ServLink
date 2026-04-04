@@ -57,7 +57,12 @@ public class GlobalExceptionHandler {
             IllegalStateException ex,
             HttpServletRequest request) {
 
-        HttpStatus status = HttpStatus.UNAUTHORIZED;
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+        String message = ex.getMessage() == null ? "" : ex.getMessage();
+        if (message.toLowerCase().contains("não autenticado") ||
+                message.toLowerCase().contains("nao autenticado")) {
+            status = HttpStatus.UNAUTHORIZED;
+        }
 
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())

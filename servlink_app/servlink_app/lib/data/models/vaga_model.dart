@@ -6,6 +6,7 @@ class VagaModel {
     required this.empresaId,
     required this.empresaNome,
     required this.empresaTelefone,
+    required this.empresaEmail,
     required this.titulo,
     required this.descricao,
     required this.valor,
@@ -18,12 +19,15 @@ class VagaModel {
     required this.categoriaId,
     required this.categoriaNome,
     required this.createdAt,
+    required this.expiraEm,
+    required this.candidaturasCount,
   });
 
   final int id;
   final int empresaId;
   final String empresaNome;
   final String empresaTelefone;
+  final String empresaEmail;
   final String titulo;
   final String descricao;
   final double valor;
@@ -36,6 +40,8 @@ class VagaModel {
   final int categoriaId;
   final String categoriaNome;
   final DateTime createdAt;
+  final DateTime? expiraEm;
+  final int candidaturasCount;
 
   factory VagaModel.fromJson(Map<String, dynamic> json) {
     return VagaModel(
@@ -43,6 +49,7 @@ class VagaModel {
       empresaId: (json['empresaId'] as num).toInt(),
       empresaNome: (json['empresaNome'] as String?) ?? '',
       empresaTelefone: (json['empresaTelefone'] as String?) ?? '',
+      empresaEmail: (json['empresaEmail'] as String?) ?? '',
       titulo: (json['titulo'] as String?) ?? '',
       descricao: (json['descricao'] as String?) ?? '',
       valor: ((json['valor_estimado'] ?? json['valor']) as num).toDouble(),
@@ -55,6 +62,10 @@ class VagaModel {
       categoriaId: (json['categoriaId'] as num).toInt(),
       categoriaNome: (json['categoriaNome'] as String?) ?? '',
       createdAt: DateTime.parse(json['createdAt'] as String),
+      expiraEm: (json['expiraEm'] as String?) == null
+          ? null
+          : DateTime.parse(json['expiraEm'] as String),
+      candidaturasCount: (json['candidaturasCount'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -64,6 +75,7 @@ class VagaModel {
       empresaId: empresaId,
       empresaNome: empresaNome,
       empresaTelefone: empresaTelefone,
+      empresaEmail: empresaEmail,
       titulo: titulo,
       descricao: descricao,
       valor: valor,
@@ -76,6 +88,8 @@ class VagaModel {
       categoriaId: categoriaId,
       categoriaNome: categoriaNome,
       createdAt: createdAt,
+      expiraEm: expiraEm,
+      candidaturasCount: candidaturasCount,
     );
   }
 }

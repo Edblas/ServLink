@@ -23,6 +23,7 @@ public class VagaResponse {
     private Long empresaId;
     private String empresaNome;
     private String empresaTelefone;
+    private String empresaEmail;
     private String titulo;
     private String descricao;
     private BigDecimal valor;
@@ -35,4 +36,6 @@ public class VagaResponse {
     private Long categoriaId;
     private String categoriaNome;
     private LocalDateTime createdAt;
+    private LocalDateTime expiraEm;
+    private Long candidaturasCount;
 }

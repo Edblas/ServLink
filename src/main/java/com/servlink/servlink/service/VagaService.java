@@ -13,5 +13,6 @@ public interface VagaService {
     VagaResponse obter(Long id);
 
     List<VagaResponse> listarPorEmpresa(Long empresaId);
-}
 
+    void apagar(Long id);
+}

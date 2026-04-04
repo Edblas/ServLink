@@ -32,6 +32,7 @@ class VagaRemoteDataSource {
     required int categoriaId,
     required String urgencia,
     required String tipo,
+    int? diasExpiracao,
   }) async {
     final date = '${dataTrabalho.year.toString().padLeft(4, '0')}-'
         '${dataTrabalho.month.toString().padLeft(2, '0')}-'
@@ -47,6 +48,7 @@ class VagaRemoteDataSource {
         'urgencia': urgencia,
         'tipo': tipo,
         'categoriaId': categoriaId,
+        if (diasExpiracao != null) 'dias_expiracao': diasExpiracao,
       },
     );
     return VagaModel.fromJson(response.data as Map<String, dynamic>);
@@ -74,5 +76,9 @@ class VagaRemoteDataSource {
         'status': status,
       },
     );
+  }
+
+  Future<void> apagarVaga(int vagaId) async {
+    await _dio.delete('/api/vagas/$vagaId');
   }
 }

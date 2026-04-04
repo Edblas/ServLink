@@ -30,6 +30,7 @@ class VagaRepositoryImpl implements VagaRepository {
     required int categoriaId,
     required String urgencia,
     required String tipo,
+    int? diasExpiracao,
   }) async {
     final result = await _remote.criarVaga(
       titulo: titulo,
@@ -40,6 +41,7 @@ class VagaRepositoryImpl implements VagaRepository {
       categoriaId: categoriaId,
       urgencia: urgencia,
       tipo: tipo,
+      diasExpiracao: diasExpiracao,
     );
     return result.toEntity();
   }
@@ -64,5 +66,10 @@ class VagaRepositoryImpl implements VagaRepository {
       candidaturaId: candidaturaId,
       status: status,
     );
+  }
+
+  @override
+  Future<void> apagarVaga(int vagaId) {
+    return _remote.apagarVaga(vagaId);
   }
 }

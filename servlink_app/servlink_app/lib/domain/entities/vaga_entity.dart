@@ -4,6 +4,7 @@ class VagaEntity {
     required this.empresaId,
     required this.empresaNome,
     required this.empresaTelefone,
+    required this.empresaEmail,
     required this.titulo,
     required this.descricao,
     required this.valor,
@@ -16,12 +17,15 @@ class VagaEntity {
     required this.categoriaId,
     required this.categoriaNome,
     required this.createdAt,
+    required this.expiraEm,
+    required this.candidaturasCount,
   });
 
   final int id;
   final int empresaId;
   final String empresaNome;
   final String empresaTelefone;
+  final String empresaEmail;
   final String titulo;
   final String descricao;
   final double valor;
@@ -34,4 +38,6 @@ class VagaEntity {
   final int categoriaId;
   final String categoriaNome;
   final DateTime createdAt;
+  final DateTime? expiraEm;
+  final int candidaturasCount;
 }

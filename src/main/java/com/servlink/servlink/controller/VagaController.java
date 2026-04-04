@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,5 +44,12 @@ public class VagaController {
     @PreAuthorize("hasAnyRole('CLIENTE','PROFISSIONAL')")
     public ResponseEntity<List<VagaResponse>> listarPorEmpresa(@PathVariable Long empresaId) {
         return ResponseEntity.ok(vagaService.listarPorEmpresa(empresaId));
+    }
+
+    @DeleteMapping("/api/vagas/{id}")
+    @PreAuthorize("hasAnyRole('CLIENTE','PROFISSIONAL')")
+    public ResponseEntity<Void> apagar(@PathVariable Long id) {
+        vagaService.apagar(id);
+        return ResponseEntity.noContent().build();
     }
 }

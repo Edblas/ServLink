@@ -37,4 +37,7 @@ public class VagaRequest {
 
     @NotNull
     private Long categoriaId;
+
+    @JsonAlias({"dias_expiracao"})
+    private Integer diasExpiracao;
 }

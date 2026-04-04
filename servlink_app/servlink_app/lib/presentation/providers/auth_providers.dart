@@ -21,7 +21,7 @@ final dioClientProvider = Provider<DioClient>((ref) {
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final client = ref.read(dioClientProvider);
   final storage = ref.read(secureStorageProvider);
-  return AuthRepositoryImpl(AuthRemoteDataSource(client), storage);
+  return AuthRepositoryImpl(AuthRemoteDataSource(client), storage, client);
 });
 
 class AuthState {

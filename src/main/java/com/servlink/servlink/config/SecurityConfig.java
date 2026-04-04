@@ -32,9 +32,11 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> usuarioRepository.findAllByEmailNormalized(username).stream()
-                .findFirst()
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+        return username -> {
+            String normalized = username == null ? "" : username.trim().toLowerCase();
+            return usuarioRepository.findByEmail(normalized)
+                    .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+        };
     }
 
     @Bean
@@ -65,6 +67,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/api/health",
+                                "/uploads/**",
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**")

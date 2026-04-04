@@ -18,6 +18,7 @@ import com.servlink.servlink.service.ProfissionalService;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,9 +26,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,6 +44,9 @@ public class ProfissionalServiceImpl implements ProfissionalService {
     private final CidadeRepository cidadeRepository;
     private final CategoriaRepository categoriaRepository;
     private final ProfissionalMapper profissionalMapper;
+
+    @Value("${servlink.uploads.dir:uploads}")
+    private String uploadsDir;
 
     public ProfissionalServiceImpl(
             ProfissionalRepository profissionalRepository,
@@ -321,12 +325,14 @@ public class ProfissionalServiceImpl implements ProfissionalService {
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new IllegalStateException("Usuário não autenticado");
         }
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("Arquivo inválido");
+        }
         String email = authentication.getName();
         Profissional profissional = profissionalRepository.findByUsuarioEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Profissional não encontrado"));
 
-        String uploadsDir = "uploads/profissionais";
-        Path dir = Paths.get(uploadsDir);
+        Path dir = Paths.get(uploadsDir).resolve("profissionais").normalize();
         try {
             Files.createDirectories(dir);
         } catch (IOException e) {
@@ -334,12 +340,21 @@ public class ProfissionalServiceImpl implements ProfissionalService {
         }
 
         String original = file.getOriginalFilename();
-        String ext = original != null && original.contains(".") ? original.substring(original.lastIndexOf('.')) : ".jpg";
+        String ext = ".jpg";
+        if (original != null && original.contains(".")) {
+            String candidate = original.substring(original.lastIndexOf('.')).toLowerCase();
+            if (candidate.matches("\\.[a-z0-9]{1,5}")) {
+                ext = candidate;
+            }
+        }
+        if (".jpg".equals(ext) || ".jpeg".equals(ext)) {
+            ext = ".jpg";
+        }
         String timestamp = DateTimeFormatter.ofPattern("yyyyMMddHHmmss").format(LocalDateTime.now());
-        String filename = "profissional-" + profissional.getId() + "-" + timestamp + ext.toLowerCase();
+        String filename = "profissional-" + profissional.getId() + "-" + timestamp + "-" + UUID.randomUUID() + ext;
         Path target = dir.resolve(filename);
         try {
-            file.transferTo(target.toFile());
+            file.transferTo(target);
         } catch (IOException e) {
             throw new IllegalStateException("Falha ao salvar arquivo");
         }

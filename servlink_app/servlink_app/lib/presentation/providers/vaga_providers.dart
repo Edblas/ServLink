@@ -52,6 +52,7 @@ class VagaActionController extends StateNotifier<AsyncValue<void>> {
     required int categoriaId,
     required String urgencia,
     required String tipo,
+    int? diasExpiracao,
   }) async {
     state = const AsyncLoading();
     try {
@@ -64,9 +65,21 @@ class VagaActionController extends StateNotifier<AsyncValue<void>> {
         categoriaId: categoriaId,
         urgencia: urgencia,
         tipo: tipo,
+        diasExpiracao: diasExpiracao,
       );
       state = const AsyncData(null);
       return vaga;
+    } catch (e, stack) {
+      state = AsyncValue.error(e, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> apagarVaga(int vagaId) async {
+    state = const AsyncLoading();
+    try {
+      await _repository.apagarVaga(vagaId);
+      state = const AsyncData(null);
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);
       rethrow;

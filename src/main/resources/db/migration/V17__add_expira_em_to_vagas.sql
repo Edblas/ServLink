@@ -1,0 +1,2 @@
+ALTER TABLE vagas
+    ADD COLUMN IF NOT EXISTS expira_em TIMESTAMP;

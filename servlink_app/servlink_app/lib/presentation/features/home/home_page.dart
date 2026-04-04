@@ -7,6 +7,7 @@ import '../auth/login_page.dart';
 import '../favorites/favorites_page.dart';
 import '../profile/profile_page.dart';
 import '../professional/professional_list_page.dart';
+import '../vagas/vagas_page.dart';
 import '../caronas/caronas_page.dart';
 import '../../widgets/category_card.dart';
 
@@ -48,6 +49,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         onSelectCategory: _selectCategoryAndSearch,
       ),
       const ProfessionalListPage(),
+      const VagasPage(),
       const CaronasPage(),
       const FavoritesPage(),
       const ProfilePage(),
@@ -75,6 +77,11 @@ class _HomePageState extends ConsumerState<HomePage> {
             icon: Icon(Icons.search_outlined),
             selectedIcon: Icon(Icons.search),
             label: 'Buscar',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.work_outline),
+            selectedIcon: Icon(Icons.work),
+            label: 'Vagas',
           ),
           NavigationDestination(
             icon: Icon(Icons.two_wheeler_outlined),

@@ -32,6 +32,228 @@ class _VagasPageState extends ConsumerState<VagasPage> {
     super.dispose();
   }
 
+  Future<void> _openSearchSheet() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Consumer(
+              builder: (context, ref, _) {
+                final cidade = ref.watch(cidadeSelecionadaProvider);
+                final categoriasAsync = ref.watch(categoriasProvider);
+
+                return SafeArea(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: 16,
+                      right: 16,
+                      top: 8,
+                      bottom: 16 + MediaQuery.of(context).viewInsets.bottom,
+                    ),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            cidade == null
+                                ? 'Cidade não selecionada'
+                                : 'Cidade: ${cidade.nome} - ${cidade.estado}',
+                            style: Theme.of(context).textTheme.titleMedium,
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: _queryController,
+                            decoration: const InputDecoration(
+                              labelText: 'Buscar vaga',
+                              prefixIcon: Icon(Icons.search),
+                              border: OutlineInputBorder(),
+                            ),
+                            onChanged: (_) {
+                              setState(() {});
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          categoriasAsync.when(
+                            data: (categorias) {
+                              return DropdownButtonFormField<int?>(
+                                value: _categoriaId,
+                                decoration: const InputDecoration(
+                                  labelText: 'Categoria',
+                                  prefixIcon: Icon(Icons.category_outlined),
+                                  border: OutlineInputBorder(),
+                                ),
+                                items: [
+                                  const DropdownMenuItem<int?>(
+                                    value: null,
+                                    child: Text('Todas'),
+                                  ),
+                                  ...categorias.map(
+                                    (c) => DropdownMenuItem<int?>(
+                                      value: c.id,
+                                      child: Text(c.nome),
+                                    ),
+                                  ),
+                                ],
+                                onChanged: (value) {
+                                  setState(() {
+                                    _categoriaId = value;
+                                  });
+                                  setSheetState(() {});
+                                },
+                              );
+                            },
+                            loading: () => const LinearProgressIndicator(),
+                            error: (_, __) => const Text(
+                              'Erro ao carregar categorias',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: DropdownButtonFormField<String>(
+                                  value: _urgencia,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Urgência',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  items: const [
+                                    DropdownMenuItem(
+                                      value: 'TODAS',
+                                      child: Text('Todas'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'HOJE',
+                                      child: Text('Hoje'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'SEMANA',
+                                      child: Text('Essa semana'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'FLEXIVEL',
+                                      child: Text('Flexível'),
+                                    ),
+                                  ],
+                                  onChanged: (value) {
+                                    if (value == null) return;
+                                    setState(() {
+                                      _urgencia = value;
+                                    });
+                                    setSheetState(() {});
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: DropdownButtonFormField<String>(
+                                  value: _ordenacao,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Ordenar',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  items: const [
+                                    DropdownMenuItem(
+                                      value: 'RECENTE',
+                                      child: Text('Mais recentes'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'DATA_TRABALHO',
+                                      child: Text('Data do trabalho'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'VALOR_MAIOR',
+                                      child: Text('Maior valor'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'VALOR_MENOR',
+                                      child: Text('Menor valor'),
+                                    ),
+                                  ],
+                                  onChanged: (value) {
+                                    if (value == null) return;
+                                    setState(() {
+                                      _ordenacao = value;
+                                    });
+                                    setSheetState(() {});
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                          CheckboxListTile(
+                            value: _somenteAbertas,
+                            onChanged: (value) {
+                              setState(() {
+                                _somenteAbertas = value ?? true;
+                              });
+                              setSheetState(() {});
+                            },
+                            title: const Text('Somente vagas abertas'),
+                            contentPadding: EdgeInsets.zero,
+                            controlAffinity: ListTileControlAffinity.leading,
+                          ),
+                          CheckboxListTile(
+                            value: _somenteSalvas,
+                            onChanged: (value) {
+                              setState(() {
+                                _somenteSalvas = value ?? false;
+                              });
+                              setSheetState(() {});
+                            },
+                            title: const Text('Somente vagas salvas'),
+                            contentPadding: EdgeInsets.zero,
+                            controlAffinity: ListTileControlAffinity.leading,
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      _queryController.clear();
+                                      _categoriaId = null;
+                                      _urgencia = 'TODAS';
+                                      _ordenacao = 'RECENTE';
+                                      _somenteAbertas = true;
+                                      _somenteSalvas = false;
+                                    });
+                                    setSheetState(() {});
+                                  },
+                                  child: const Text('Limpar'),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.of(sheetContext).pop();
+                                  },
+                                  child: const Text('Aplicar'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
   String _formatDate(DateTime date) {
     final d = date.day.toString().padLeft(2, '0');
     final m = date.month.toString().padLeft(2, '0');
@@ -97,7 +319,6 @@ class _VagasPageState extends ConsumerState<VagasPage> {
     final role = authState.session?.role;
     final whatsAppService = ref.watch(whatsAppServiceProvider);
     final cidade = ref.watch(cidadeSelecionadaProvider);
-    final categoriasAsync = ref.watch(categoriasProvider);
     final vagasFavoritasAsync = ref.watch(vagasFavoritasControllerProvider);
     final favoritasIds = vagasFavoritasAsync.value ?? <int>{};
 
@@ -113,8 +334,18 @@ class _VagasPageState extends ConsumerState<VagasPage> {
             ],
           ),
         ),
-        floatingActionButton: role == 'CLIENTE' || role == 'PROFISSIONAL'
-            ? FloatingActionButton(
+        floatingActionButton: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FloatingActionButton.small(
+              heroTag: 'vagas_search_fab',
+              onPressed: _openSearchSheet,
+              child: const Icon(Icons.search),
+            ),
+            if (role == 'CLIENTE' || role == 'PROFISSIONAL') ...[
+              const SizedBox(height: 12),
+              FloatingActionButton(
+                heroTag: 'vagas_add_fab',
                 onPressed: () async {
                   await Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const CriarVagaPage()),
@@ -122,174 +353,29 @@ class _VagasPageState extends ConsumerState<VagasPage> {
                   ref.invalidate(vagasProvider);
                 },
                 child: const Icon(Icons.add),
-              )
-            : null,
+              ),
+            ],
+          ],
+        ),
         body: SafeArea(
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 520),
               child: Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Text(
-                              cidade == null
-                                  ? 'Cidade não selecionada'
-                                  : 'Cidade: ${cidade.nome} - ${cidade.estado}',
-                              style: Theme.of(context).textTheme.titleMedium,
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 12),
-                            TextField(
-                              controller: _queryController,
-                              decoration: const InputDecoration(
-                                labelText: 'Buscar vaga',
-                                prefixIcon: Icon(Icons.search),
-                                border: OutlineInputBorder(),
-                              ),
-                              onChanged: (_) => setState(() {}),
-                            ),
-                            const SizedBox(height: 12),
-                            categoriasAsync.when(
-                              data: (categorias) {
-                                return DropdownButtonFormField<int?>(
-                                  value: _categoriaId,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Categoria',
-                                    prefixIcon: Icon(Icons.category_outlined),
-                                    border: OutlineInputBorder(),
-                                  ),
-                                  items: [
-                                    const DropdownMenuItem<int?>(
-                                      value: null,
-                                      child: Text('Todas'),
-                                    ),
-                                    ...categorias.map(
-                                      (c) => DropdownMenuItem<int?>(
-                                        value: c.id,
-                                        child: Text(c.nome),
-                                      ),
-                                    ),
-                                  ],
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _categoriaId = value;
-                                    });
-                                  },
-                                );
-                              },
-                              loading: () => const LinearProgressIndicator(),
-                              error: (_, __) => const Text(
-                                'Erro ao carregar categorias',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(color: Colors.red),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: DropdownButtonFormField<String>(
-                                    value: _urgencia,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Urgência',
-                                      border: OutlineInputBorder(),
-                                    ),
-                                    items: const [
-                                      DropdownMenuItem(
-                                        value: 'TODAS',
-                                        child: Text('Todas'),
-                                      ),
-                                      DropdownMenuItem(
-                                        value: 'HOJE',
-                                        child: Text('Hoje'),
-                                      ),
-                                      DropdownMenuItem(
-                                        value: 'SEMANA',
-                                        child: Text('Essa semana'),
-                                      ),
-                                      DropdownMenuItem(
-                                        value: 'FLEXIVEL',
-                                        child: Text('Flexível'),
-                                      ),
-                                    ],
-                                    onChanged: (value) {
-                                      if (value == null) return;
-                                      setState(() {
-                                        _urgencia = value;
-                                      });
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: DropdownButtonFormField<String>(
-                                    value: _ordenacao,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Ordenar',
-                                      border: OutlineInputBorder(),
-                                    ),
-                                    items: const [
-                                      DropdownMenuItem(
-                                        value: 'RECENTE',
-                                        child: Text('Mais recentes'),
-                                      ),
-                                      DropdownMenuItem(
-                                        value: 'DATA_TRABALHO',
-                                        child: Text('Data do trabalho'),
-                                      ),
-                                      DropdownMenuItem(
-                                        value: 'VALOR_MAIOR',
-                                        child: Text('Maior valor'),
-                                      ),
-                                      DropdownMenuItem(
-                                        value: 'VALOR_MENOR',
-                                        child: Text('Menor valor'),
-                                      ),
-                                    ],
-                                    onChanged: (value) {
-                                      if (value == null) return;
-                                      setState(() {
-                                        _ordenacao = value;
-                                      });
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                            CheckboxListTile(
-                              value: _somenteAbertas,
-                              onChanged: (value) {
-                                setState(() {
-                                  _somenteAbertas = value ?? true;
-                                });
-                              },
-                              title: const Text('Somente vagas abertas'),
-                              contentPadding: EdgeInsets.zero,
-                              controlAffinity: ListTileControlAffinity.leading,
-                            ),
-                            CheckboxListTile(
-                              value: _somenteSalvas,
-                              onChanged: (value) {
-                                setState(() {
-                                  _somenteSalvas = value ?? false;
-                                });
-                              },
-                              title: const Text('Somente vagas salvas'),
-                              contentPadding: EdgeInsets.zero,
-                              controlAffinity: ListTileControlAffinity.leading,
-                            ),
-                          ],
+                  if (cidade == null)
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(16, 16, 16, 0),
+                      child: Card(
+                        child: Padding(
+                          padding: EdgeInsets.all(12),
+                          child: Text(
+                            'Cidade não selecionada',
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ),
                     ),
-                  ),
                   Expanded(
                     child: vagasAsync.when(
                       data: (vagas) {
@@ -404,7 +490,7 @@ class _VagasPageState extends ConsumerState<VagasPage> {
           child: ListTile(
             title: Text(vaga.titulo),
             subtitle: Text(
-              '${vaga.empresaNome} • ${vaga.cidadeNome} • ${_formatUrgencia(vaga.urgencia)} • ${_formatDate(vaga.dataTrabalho)}',
+              '${vaga.empresaNome} • ${vaga.cidadeNome} • ${_formatUrgencia(vaga.urgencia)} • ${_formatDate(vaga.dataTrabalho)} • ${vaga.candidaturasCount} candidatos',
             ),
             trailing: Column(
               mainAxisAlignment: MainAxisAlignment.center,

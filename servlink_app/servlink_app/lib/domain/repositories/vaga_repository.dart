@@ -15,6 +15,7 @@ abstract class VagaRepository {
     required int categoriaId,
     required String urgencia,
     required String tipo,
+    int? diasExpiracao,
   });
 
   Future<void> candidatar(int vagaId);
@@ -25,4 +26,6 @@ abstract class VagaRepository {
     required int candidaturaId,
     required String status,
   });
+
+  Future<void> apagarVaga(int vagaId);
 }

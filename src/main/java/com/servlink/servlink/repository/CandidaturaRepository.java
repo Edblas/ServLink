@@ -15,6 +15,17 @@ public interface CandidaturaRepository extends JpaRepository<Candidatura, Long> 
 
     List<Candidatura> findByProfissionalIdOrderByDataCandidaturaDesc(Long profissionalId);
 
+    long countByVagaId(Long vagaId);
+
+    @Query("""
+            SELECT c.vaga.id, COUNT(c.id)
+            FROM Candidatura c
+            WHERE c.vaga.id IN :vagaIds
+              AND c.ativo = TRUE
+            GROUP BY c.vaga.id
+            """)
+    List<Object[]> countByVagaIds(@Param("vagaIds") List<Long> vagaIds);
+
     @Modifying
     @Query("""
             UPDATE Candidatura c

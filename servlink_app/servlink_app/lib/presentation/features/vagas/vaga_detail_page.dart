@@ -32,6 +32,53 @@ class VagaDetailPage extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Detalhe da vaga'),
         actions: [
+          if (role == 'CLIENTE' || role == 'PROFISSIONAL')
+            IconButton(
+              onPressed: actionState.isLoading
+                  ? null
+                  : () async {
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text('Apagar vaga'),
+                            content: const Text(
+                              'Deseja apagar esta vaga? Ela deixará de aparecer para os usuários.',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(false),
+                                child: const Text('Cancelar'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () => Navigator.of(context).pop(true),
+                                child: const Text('Apagar'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                      if (confirmed != true) return;
+                      try {
+                        await ref
+                            .read(vagaActionControllerProvider.notifier)
+                            .apagarVaga(vagaId);
+                        ref.invalidate(vagasProvider);
+                        if (!context.mounted) return;
+                        Navigator.of(context).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Vaga apagada')),
+                        );
+                      } catch (_) {
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Falha ao apagar vaga')),
+                        );
+                      }
+                    },
+              icon: const Icon(Icons.delete_outline),
+              tooltip: 'Apagar vaga',
+            ),
           IconButton(
             onPressed: () async {
               await ref
@@ -47,8 +94,13 @@ class VagaDetailPage extends ConsumerWidget {
       ),
       body: vagaAsync.when(
         data: (vaga) {
-          final canApply =
-              role == 'PROFISSIONAL' && vaga.status == 'ABERTA' && !actionState.isLoading;
+          final sessionEmail = authState.session?.email.trim().toLowerCase();
+          final empresaEmail = vaga.empresaEmail.trim().toLowerCase();
+          final isOwnVaga = sessionEmail != null && sessionEmail.isNotEmpty && sessionEmail == empresaEmail;
+          final canApply = role == 'PROFISSIONAL' &&
+              vaga.status == 'ABERTA' &&
+              !actionState.isLoading &&
+              !isOwnVaga;
           final hasTelefone =
               vaga.empresaTelefone.trim().replaceAll(RegExp(r'[^0-9]'), '').isNotEmpty;
           final urgenciaLabel = switch (vaga.urgencia) {
@@ -60,6 +112,7 @@ class VagaDetailPage extends ConsumerWidget {
             'EMPREGO' => 'Emprego',
             _ => 'Bico (temporário)',
           };
+          final expiraLabel = vaga.expiraEm == null ? null : _formatDate(vaga.expiraEm!);
 
           return SafeArea(
             child: SingleChildScrollView(
@@ -97,8 +150,14 @@ class VagaDetailPage extends ConsumerWidget {
                               Text(
                                 'Valor estimado: R\$ ${vaga.valor.toStringAsFixed(2)}',
                               ),
+                              if (expiraLabel != null) ...[
+                                const SizedBox(height: 4),
+                                Text('Expira em: $expiraLabel'),
+                              ],
                               const SizedBox(height: 4),
                               Text('Status: ${vaga.status}'),
+                              const SizedBox(height: 4),
+                              Text('Candidatos: ${vaga.candidaturasCount}'),
                             ],
                           ),
                         ),
@@ -140,7 +199,9 @@ class VagaDetailPage extends ConsumerWidget {
                                       ),
                                     );
                                   },
-                                  child: const Text('Ver candidatos'),
+                                  child: Text(
+                                    'Ver candidatos (${vaga.candidaturasCount})',
+                                  ),
                                 ),
                               if (role == 'CLIENTE') const SizedBox(height: 12),
                               OutlinedButton(

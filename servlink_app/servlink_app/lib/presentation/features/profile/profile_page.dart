@@ -991,12 +991,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         final status = e.response?.statusCode;
         if (status == 401) {
           message = 'Sessão expirada. Faça login novamente.';
-          await ref.read(authControllerProvider.notifier).logout();
-          if (!mounted) return;
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const LoginPage()),
-            (route) => false,
-          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(message)),
+            );
+          }
           return;
         } else if (status == 403) {
           message = 'Acesso negado';
