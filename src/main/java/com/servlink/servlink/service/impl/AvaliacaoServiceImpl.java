@@ -62,6 +62,13 @@ public class AvaliacaoServiceImpl implements AvaliacaoService {
         Profissional profissional = profissionalRepository.findById(request.getProfissionalId())
                 .orElseThrow(() -> new IllegalArgumentException("Profissional não encontrado"));
 
+        if (cliente.getUsuario() != null
+                && profissional.getUsuario() != null
+                && cliente.getUsuario().getId() != null
+                && cliente.getUsuario().getId().equals(profissional.getUsuario().getId())) {
+            throw new IllegalArgumentException("Você não pode se avaliar");
+        }
+
         Avaliacao avaliacao = new Avaliacao();
         avaliacao.setCliente(cliente);
         avaliacao.setProfissional(profissional);

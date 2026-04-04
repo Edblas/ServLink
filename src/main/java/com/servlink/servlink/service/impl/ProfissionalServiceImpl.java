@@ -359,9 +359,27 @@ public class ProfissionalServiceImpl implements ProfissionalService {
             throw new IllegalStateException("Falha ao salvar arquivo");
         }
 
+        String oldUrl = profissional.getFotoUrl();
         String url = "/uploads/profissionais/" + filename;
         profissional.setFotoUrl(url);
         Profissional salvo = profissionalRepository.save(profissional);
+
+        deleteOldProfissionalPhotoIfLocal(oldUrl, dir);
         return profissionalMapper.toResponse(salvo);
+    }
+
+    private void deleteOldProfissionalPhotoIfLocal(String oldUrl, Path profissionaisDir) {
+        if (oldUrl == null) return;
+        String trimmed = oldUrl.trim();
+        if (!trimmed.startsWith("/uploads/profissionais/")) return;
+        String oldFilename = trimmed.substring("/uploads/profissionais/".length());
+        if (oldFilename.isBlank()) return;
+
+        Path oldPath = profissionaisDir.resolve(oldFilename).normalize();
+        if (!oldPath.startsWith(profissionaisDir)) return;
+        try {
+            Files.deleteIfExists(oldPath);
+        } catch (IOException ignored) {
+        }
     }
 }

@@ -54,21 +54,9 @@ class ProfissionalEntity {
   bool get isPerfilProfissionalCompleto {
     final descricaoOk = descricao.trim().isNotEmpty &&
         descricao.trim().toLowerCase() != 'atualize seu perfil';
-    final idadeOk = idade != null && idade! > 0;
-    final pagamentoOk = (tipoPagamento ?? '').trim().isNotEmpty;
-    final enderecoOk = (endereco ?? '').trim().isNotEmpty;
-    final cepOk = (cep ?? '').trim().isNotEmpty;
-    final numeroOk = (numero ?? '').trim().isNotEmpty;
     final cidadeOk = cidadeId != null;
     final categoriaOk = categoriaId != null;
-    return descricaoOk &&
-        idadeOk &&
-        pagamentoOk &&
-        enderecoOk &&
-        cepOk &&
-        numeroOk &&
-        cidadeOk &&
-        categoriaOk;
+    return descricaoOk && cidadeOk && categoriaOk;
   }
 
   double get percentualPerfilCompleto {

@@ -27,15 +27,15 @@ class CaronaModel {
 
   factory CaronaModel.fromJson(Map<String, dynamic> json) {
     return CaronaModel(
-      id: json['id'] as int,
-      usuarioId: json['usuarioId'] as int,
-      usuarioNome: json['usuarioNome'] as String,
-      origem: json['origem'] as String,
-      destino: json['destino'] as String,
-      dataHora: DateTime.parse(json['dataHora'] as String),
-      vagas: json['vagas'] as int,
+      id: (json['id'] as num?)?.toInt() ?? 0,
+      usuarioId: (json['usuarioId'] as num?)?.toInt() ?? 0,
+      usuarioNome: (json['usuarioNome'] as String?) ?? '',
+      origem: (json['origem'] as String?) ?? '',
+      destino: (json['destino'] as String?) ?? '',
+      dataHora: DateTime.parse((json['dataHora'] as String?) ?? DateTime.now().toIso8601String()),
+      vagas: (json['vagas'] as num?)?.toInt() ?? 0,
       valor: (json['valor'] as num?)?.toDouble(),
-      telefone: json['telefone'] as String,
+      telefone: (json['telefone'] as String?) ?? '',
       observacao: json['observacao'] as String?,
     );
   }

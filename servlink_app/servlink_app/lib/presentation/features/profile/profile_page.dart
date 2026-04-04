@@ -211,16 +211,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final content = Scaffold(
       appBar: AppBar(
         title: const Text('Perfil'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SettingsPage()),
-              );
-            },
-            icon: const Icon(Icons.settings),
-          ),
-        ],
       ),
       body: session == null
           ? const Center(child: Text('Nenhum usuário autenticado'))
@@ -742,15 +732,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               ),
               const SizedBox(height: 12),
               TextFormField(
-                controller: _fotoUrlController,
-                decoration: const InputDecoration(
-                  labelText: 'Foto (URL)',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.url,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
                 controller: _instagramController,
                 decoration: const InputDecoration(
                   labelText: 'Instagram (link ou @)',
@@ -897,9 +878,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         nome: _nomeController.text.trim(),
         telefone: _telefoneController.text.trim(),
         descricao: _descricaoController.text.trim(),
-        fotoUrl: _fotoUrlController.text.trim().isEmpty
-            ? ''
-            : _fotoUrlController.text.trim(),
         anosExperiencia: _parseIntOrNull(_anosExperienciaController.text),
         idade: _parseIntOrNull(_idadeController.text),
         tipoPagamento: _tipoPagamento,

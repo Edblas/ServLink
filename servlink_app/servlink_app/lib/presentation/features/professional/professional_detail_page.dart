@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/config/app_config.dart';
 import '../../../domain/entities/profissional_entity.dart';
+import '../../providers/auth_providers.dart';
 import '../../providers/avaliacao_providers.dart';
 import '../../providers/favoritos_providers.dart';
 import '../../providers/whatsapp_providers.dart';
@@ -26,6 +28,18 @@ class ProfessionalDetailPage extends ConsumerWidget {
     final instagramLink = _normalizeInstagram(profissional.instagramUrl);
     final tiktokLink = _normalizeTikTok(profissional.tiktokUrl);
     final siteLink = _normalizeSite(profissional.siteUrl);
+    final sessionEmail =
+        ref.watch(authControllerProvider).session?.email.trim().toLowerCase();
+    final isSelf = sessionEmail != null &&
+        sessionEmail.isNotEmpty &&
+        sessionEmail == profissional.email.trim().toLowerCase();
+    final foto = (profissional.fotoUrl ?? '').trim();
+    final avatarUrl = foto.isEmpty
+        ? null
+        : (foto.startsWith('http')
+            ? foto
+            : '${AppConfig.apiBaseUrl}${foto.startsWith('/') ? '' : '/'}$foto');
+    final initial = profissional.nome.isEmpty ? '?' : profissional.nome.substring(0, 1);
 
     return Scaffold(
       appBar: AppBar(
@@ -52,9 +66,28 @@ class ProfessionalDetailPage extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  CircleAvatar(
-                    radius: 32,
-                    child: Text(profissional.nome.substring(0, 1)),
+                  SizedBox(
+                    width: 64,
+                    height: 64,
+                    child: ClipOval(
+                      child: avatarUrl == null
+                          ? Container(
+                              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                              alignment: Alignment.center,
+                              child: Text(initial),
+                            )
+                          : Image.network(
+                              avatarUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) {
+                                return Container(
+                                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                                  alignment: Alignment.center,
+                                  child: Text(initial),
+                                );
+                              },
+                            ),
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -229,7 +262,7 @@ class ProfessionalDetailPage extends ConsumerWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: avaliacaoState.isLoading
+                  onPressed: (avaliacaoState.isLoading || isSelf)
                       ? null
                       : () {
                           _showAvaliarDialog(context, ref);

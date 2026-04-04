@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/config/app_config.dart';
 import '../../domain/entities/profissional_entity.dart';
 
 class ProfessionalCard extends StatelessWidget {
@@ -19,6 +20,13 @@ class ProfessionalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final foto = (profissional.fotoUrl ?? '').trim();
+    final avatarUrl = foto.isEmpty
+        ? null
+        : (foto.startsWith('http')
+            ? foto
+            : '${AppConfig.apiBaseUrl}${foto.startsWith('/') ? '' : '/'}$foto');
+    final initial = profissional.nome.isEmpty ? '?' : profissional.nome.substring(0, 1);
     return Card(
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       child: InkWell(
@@ -28,9 +36,28 @@ class ProfessionalCard extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
-              CircleAvatar(
-                radius: 24,
-                child: Text(profissional.nome.substring(0, 1)),
+              SizedBox(
+                width: 48,
+                height: 48,
+                child: ClipOval(
+                  child: avatarUrl == null
+                      ? Container(
+                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                          alignment: Alignment.center,
+                          child: Text(initial),
+                        )
+                      : Image.network(
+                          avatarUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) {
+                            return Container(
+                              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                              alignment: Alignment.center,
+                              child: Text(initial),
+                            );
+                          },
+                        ),
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(

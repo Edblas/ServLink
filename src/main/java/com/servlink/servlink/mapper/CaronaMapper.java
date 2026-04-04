@@ -9,6 +9,8 @@ import org.mapstruct.Mapping;
 public interface CaronaMapper {
     @Mapping(target = "usuarioId", source = "usuario.id")
     @Mapping(target = "usuarioNome", source = "usuario.nome")
-    @Mapping(target = "dataCriacao", expression = "java(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(carona.getDataCriacao()))")
+    @Mapping(
+            target = "dataCriacao",
+            expression = "java(carona.getDataCriacao() == null ? null : java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(carona.getDataCriacao()))")
     CaronaResponse toResponse(Carona carona);
 }
