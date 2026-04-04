@@ -84,6 +84,26 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<AuthSession?> restoreSession() async {
+    final token = await _storage.getAccessToken();
+    if (token == null || token.trim().isEmpty) {
+      return null;
+    }
+    try {
+      final me = await _remote.me();
+      return AuthSession(
+        accessToken: token,
+        nome: me.nome,
+        email: me.email,
+        role: me.role,
+      );
+    } catch (_) {
+      await _storage.clearAccessToken();
+      return null;
+    }
+  }
+
+  @override
   Future<void> logout() {
     return _storage.clearAccessToken();
   }

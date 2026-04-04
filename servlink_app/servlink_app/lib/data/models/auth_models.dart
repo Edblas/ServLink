@@ -86,6 +86,26 @@ class ResetPasswordRequestModel {
   }
 }
 
+class AuthMeResponseModel {
+  AuthMeResponseModel({
+    required this.nome,
+    required this.email,
+    required this.role,
+  });
+
+  final String nome;
+  final String email;
+  final String role;
+
+  factory AuthMeResponseModel.fromJson(Map<String, dynamic> json) {
+    return AuthMeResponseModel(
+      nome: json['nome'] as String,
+      email: json['email'] as String,
+      role: json['role'] as String,
+    );
+  }
+}
+
 class LoginResponseModel {
   LoginResponseModel({
     required this.accessToken,

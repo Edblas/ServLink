@@ -18,14 +18,11 @@ class DioClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          final path = options.path;
-          final isAuthRoute =
-              path.startsWith('/api/auth/') || path.startsWith('/api/health');
-          if (!isAuthRoute) {
+          if (options.headers['Authorization'] == null) {
             try {
               final token = await _storage
                   .getAccessToken()
-                  .timeout(const Duration(seconds: 2));
+                  .timeout(const Duration(seconds: 8));
               if (token != null && token.isNotEmpty) {
                 options.headers['Authorization'] = 'Bearer $token';
               }

@@ -53,6 +53,17 @@ class AuthController extends StateNotifier<AuthState> {
 
   final AuthRepository _repository;
 
+  Future<void> restoreSession() async {
+    if (state.session != null) return;
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      final session = await _repository.restoreSession();
+      state = state.copyWith(session: session, isLoading: false);
+    } catch (_) {
+      state = state.copyWith(isLoading: false);
+    }
+  }
+
   Future<void> login(String email, String senha) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {

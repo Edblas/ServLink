@@ -38,4 +38,9 @@ class AuthRemoteDataSource {
       data: request.toJson(),
     );
   }
+
+  Future<AuthMeResponseModel> me() async {
+    final response = await _dio.get('/api/auth/me');
+    return AuthMeResponseModel.fromJson(response.data as Map<String, dynamic>);
+  }
 }

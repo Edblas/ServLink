@@ -82,6 +82,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           ),
           actions: [
             TextButton(
+              onPressed: _resettingPassword
+                  ? null
+                  : () {
+                      Navigator.of(dialogContext).pop();
+                      _openResetPasswordDialog();
+                    },
+              child: const Text('Já tenho o código'),
+            ),
+            TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
               child: const Text('Cancelar'),
             ),
@@ -324,10 +333,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               TextButton(
                 onPressed: _sendingReset ? null : _openForgotPasswordDialog,
                 child: const Text('Esqueci minha senha'),
-              ),
-              TextButton(
-                onPressed: _resettingPassword ? null : _openResetPasswordDialog,
-                child: const Text('Já tenho o código'),
               ),
             ],
           ),

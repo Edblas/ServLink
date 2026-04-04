@@ -26,5 +26,7 @@ abstract class AuthRepository {
     required String novaSenha,
   });
 
+  Future<AuthSession?> restoreSession();
+
   Future<void> logout();
 }

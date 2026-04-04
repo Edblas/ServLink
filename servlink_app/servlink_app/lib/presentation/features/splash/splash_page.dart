@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_providers.dart';
@@ -15,13 +14,14 @@ class SplashPage extends ConsumerStatefulWidget {
 }
 
 class _SplashPageState extends ConsumerState<SplashPage> {
-  Timer? _timer;
-
   @override
   void initState() {
     super.initState();
-    _timer = Timer(const Duration(milliseconds: 500), () async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final auth = ref.read(authControllerProvider.notifier);
+      await auth.restoreSession();
       if (!mounted) return;
+
       final authState = ref.read(authControllerProvider);
       final session = authState.session;
       if (session == null) {
@@ -54,12 +54,6 @@ class _SplashPageState extends ConsumerState<SplashPage> {
         MaterialPageRoute(builder: (_) => const CitySelectionPage()),
       );
     });
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
   }
 
   @override

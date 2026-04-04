@@ -941,12 +941,23 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           );
         }
       }
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Falha ao atualizar perfil')),
-        );
+    } catch (e) {
+      if (e is DioException) {
+        final status = e.response?.statusCode;
+        if (status == 401) {
+          await ref.read(authControllerProvider.notifier).logout();
+          if (!mounted) return;
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const LoginPage()),
+            (route) => false,
+          );
+          return;
+        }
       }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Falha ao atualizar perfil')),
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -978,8 +989,17 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       var message = 'Falha ao enviar foto';
       if (e is DioException) {
         final status = e.response?.statusCode;
-        if (status == 401 || status == 403) {
+        if (status == 401) {
           message = 'Sessão expirada. Faça login novamente.';
+          await ref.read(authControllerProvider.notifier).logout();
+          if (!mounted) return;
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const LoginPage()),
+            (route) => false,
+          );
+          return;
+        } else if (status == 403) {
+          message = 'Acesso negado';
         } else if (status != null) {
           message = 'Falha ao enviar foto (HTTP $status)';
           final data = e.response?.data;

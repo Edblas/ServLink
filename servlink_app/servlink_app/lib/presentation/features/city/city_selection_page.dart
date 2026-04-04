@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/auth_providers.dart';
 import '../../providers/catalog_providers.dart';
+import '../auth/login_page.dart';
 import '../home/home_page.dart';
 
 class CitySelectionPage extends ConsumerStatefulWidget {
@@ -15,6 +17,10 @@ class _CitySelectionPageState extends ConsumerState<CitySelectionPage> {
 
   @override
   Widget build(BuildContext context) {
+    final session = ref.watch(authControllerProvider).session;
+    if (session == null) {
+      return const LoginPage();
+    }
     final cidadesAsync = ref.watch(cidadesProvider);
 
     return Scaffold(

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/entities/categoria_entity.dart';
+import '../../providers/auth_providers.dart';
 import '../../providers/catalog_providers.dart';
+import '../auth/login_page.dart';
 import '../favorites/favorites_page.dart';
 import '../profile/profile_page.dart';
 import '../professional/professional_list_page.dart';
@@ -36,6 +38,10 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final session = ref.watch(authControllerProvider).session;
+    if (session == null) {
+      return const LoginPage();
+    }
     final tabs = [
       CategoriesTab(
         onSearch: _goToSearch,
