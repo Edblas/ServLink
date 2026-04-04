@@ -23,18 +23,18 @@ public interface ProfissionalRepository extends JpaRepository<Profissional, Long
             LEFT JOIN p.categoria c
             WHERE (:cidadeId IS NULL OR ci.id = :cidadeId)
               AND (:categoriaId IS NULL OR c.id = :categoriaId)
-              AND (:bairro IS NULL OR COALESCE(p.bairro, '') ILIKE CONCAT('%', :bairro, '%'))
+              AND (:bairroLike IS NULL OR COALESCE(p.bairro, '') ILIKE :bairroLike)
               AND (
-                :q IS NULL
-                OR u.nome ILIKE CONCAT('%', :q, '%')
-                OR COALESCE(c.nome, '') ILIKE CONCAT('%', :q, '%')
+                :qLike IS NULL
+                OR u.nome ILIKE :qLike
+                OR COALESCE(c.nome, '') ILIKE :qLike
               )
             """)
     Page<Profissional> search(
             @Param("cidadeId") Long cidadeId,
             @Param("categoriaId") Long categoriaId,
-            @Param("q") String q,
-            @Param("bairro") String bairro,
+            @Param("qLike") String qLike,
+            @Param("bairroLike") String bairroLike,
             Pageable pageable);
 
     @Query("""

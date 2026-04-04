@@ -310,10 +310,10 @@ public class ProfissionalServiceImpl implements ProfissionalService {
 
         Pageable pageable = PageRequest.of(pagina, tamanho, sort);
 
-        String query = q == null || q.isBlank() ? null : q.trim();
-        String bairroFiltro = bairro == null || bairro.isBlank() ? null : bairro.trim();
+        String queryLike = q == null || q.isBlank() ? null : "%" + q.trim() + "%";
+        String bairroLike = bairro == null || bairro.isBlank() ? null : "%" + bairro.trim() + "%";
 
-        return profissionalRepository.search(cidadeId, categoriaId, query, bairroFiltro, pageable)
+        return profissionalRepository.search(cidadeId, categoriaId, queryLike, bairroLike, pageable)
                 .map(profissionalMapper::toResponse);
     }
 
