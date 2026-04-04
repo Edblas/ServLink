@@ -55,14 +55,14 @@ class ProfissionalModel {
 
   factory ProfissionalModel.fromJson(Map<String, dynamic> json) {
     return ProfissionalModel(
-      id: json['id'] as int,
-      nome: json['nome'] as String,
-      email: json['email'] as String,
-      telefone: json['telefone'] as String,
-      descricao: json['descricao'] as String,
+      id: (json['id'] as num?)?.toInt() ?? 0,
+      nome: (json['nome'] as String?) ?? '',
+      email: (json['email'] as String?) ?? '',
+      telefone: (json['telefone'] as String?) ?? '',
+      descricao: (json['descricao'] as String?) ?? '',
       fotoUrl: json['fotoUrl'] as String?,
-      anosExperiencia: json['anosExperiencia'] as int?,
-      idade: json['idade'] as int?,
+      anosExperiencia: (json['anosExperiencia'] as num?)?.toInt(),
+      idade: (json['idade'] as num?)?.toInt(),
       tipoPagamento: json['tipoPagamento'] as String?,
       instagramUrl: json['instagramUrl'] as String?,
       tiktokUrl: json['tiktokUrl'] as String?,
@@ -73,11 +73,11 @@ class ProfissionalModel {
       complemento: json['complemento'] as String?,
       bairro: json['bairro'] as String?,
       carteiraMotorista: json['carteiraMotorista'] as bool?,
-      plano: json['plano'] as String,
-      cidadeId: json['cidadeId'] as int?,
-      cidadeNome: json['cidadeNome'] as String,
-      categoriaId: json['categoriaId'] as int?,
-      categoriaNome: json['categoriaNome'] as String,
+      plano: (json['plano'] as String?) ?? 'BASICO',
+      cidadeId: (json['cidadeId'] as num?)?.toInt(),
+      cidadeNome: (json['cidadeNome'] as String?) ?? '',
+      categoriaId: (json['categoriaId'] as num?)?.toInt(),
+      categoriaNome: (json['categoriaNome'] as String?) ?? '',
       mediaAvaliacoes: (json['mediaAvaliacoes'] as num?)?.toDouble() ?? 0.0,
     );
   }
