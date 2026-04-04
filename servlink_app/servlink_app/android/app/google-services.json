@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "508114529190",
+    "project_id": "servlink-46217",
+    "storage_bucket": "servlink-46217.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:508114529190:android:52b6de4e4e56826da3fd67",
+        "android_client_info": {
+          "package_name": "com.servlink.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPUhda67wMZ9fbF2xffaMKx4NYbnHw-PU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
