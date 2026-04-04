@@ -58,14 +58,14 @@ public class CaronaServiceImpl implements CaronaService {
 
     @Override
     public List<CaronaResponse> listar() {
-        return caronaRepository.findAllByOrderByDataCriacaoDesc().stream()
+        return caronaRepository.findAllByAtivoTrueOrderByDataCriacaoDesc().stream()
                 .map(caronaMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
     @Override
     public CaronaResponse obter(Long id) {
-        Carona carona = caronaRepository.findById(id)
+        Carona carona = caronaRepository.findByIdAtivaWithUsuario(id)
                 .orElseThrow(() -> new IllegalArgumentException("Carona não encontrada"));
         return caronaMapper.toResponse(carona);
     }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
 import '../../providers/carona_providers.dart';
 import 'criar_carona_page.dart';
 
@@ -74,7 +75,48 @@ class CaronasPage extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => const Center(child: Text('Erro ao carregar caronas')),
+        error: (error, stack) {
+          var message = 'Erro ao carregar caronas';
+          if (error is DioException) {
+            final status = error.response?.statusCode;
+            if (status != null) {
+              message = 'Erro ao carregar caronas (HTTP $status)';
+              final data = error.response?.data;
+              if (data is Map<String, dynamic>) {
+                final text = data['message'];
+                if (text is String && text.trim().isNotEmpty) {
+                  message = text.trim();
+                }
+              }
+            }
+          }
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(message, textAlign: TextAlign.center),
+                        const SizedBox(height: 12),
+                        ElevatedButton(
+                          onPressed: () {
+                            ref.invalidate(caronasProvider);
+                          },
+                          child: const Text('Tentar novamente'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
