@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../domain/entities/vaga_entity.dart';
 import '../../providers/auth_providers.dart';
 import '../../providers/catalog_providers.dart';
 import '../../providers/vaga_providers.dart';
 
 class CriarVagaPage extends ConsumerStatefulWidget {
-  const CriarVagaPage({super.key});
+  const CriarVagaPage({super.key, this.initial});
+
+  final VagaEntity? initial;
 
   @override
   ConsumerState<CriarVagaPage> createState() => _CriarVagaPageState();
@@ -22,6 +25,22 @@ class _CriarVagaPageState extends ConsumerState<CriarVagaPage> {
   String _urgencia = 'FLEXIVEL';
   String _tipo = 'BICO';
   int? _diasExpiracao;
+
+  @override
+  void initState() {
+    super.initState();
+    final initial = widget.initial;
+    if (initial != null) {
+      _tituloController.text = initial.titulo;
+      _descricaoController.text = initial.descricao;
+      _valorController.text = initial.valor.toStringAsFixed(2);
+      _dataTrabalho = initial.dataTrabalho;
+      _categoriaId = initial.categoriaId;
+      _urgencia = initial.urgencia;
+      _tipo = initial.tipo;
+      _diasExpiracao = null;
+    }
+  }
 
   @override
   void dispose() {
@@ -71,23 +90,41 @@ class _CriarVagaPageState extends ConsumerState<CriarVagaPage> {
     if (valor == null) return;
 
     try {
-      await ref.read(vagaActionControllerProvider.notifier).criarVaga(
-            titulo: _tituloController.text.trim(),
-            descricao: _descricaoController.text.trim(),
-            valor: valor,
-            cidadeId: cidade.id,
-            dataTrabalho: data,
-            urgencia: _urgencia,
-            tipo: _tipo,
-            categoriaId: categoriaId,
-            diasExpiracao: _diasExpiracao,
-          );
+      final controller = ref.read(vagaActionControllerProvider.notifier);
+      if (widget.initial != null) {
+        await controller.atualizarVaga(
+          id: widget.initial!.id,
+          titulo: _tituloController.text.trim(),
+          descricao: _descricaoController.text.trim(),
+          valor: valor,
+          cidadeId: cidade.id,
+          dataTrabalho: data,
+          urgencia: _urgencia,
+          tipo: _tipo,
+          categoriaId: categoriaId,
+          diasExpiracao: _diasExpiracao,
+        );
+      } else {
+        await controller.criarVaga(
+          titulo: _tituloController.text.trim(),
+          descricao: _descricaoController.text.trim(),
+          valor: valor,
+          cidadeId: cidade.id,
+          dataTrabalho: data,
+          urgencia: _urgencia,
+          tipo: _tipo,
+          categoriaId: categoriaId,
+          diasExpiracao: _diasExpiracao,
+        );
+      }
       if (!mounted) return;
       Navigator.of(context).pop();
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Falha ao criar vaga')),
+        SnackBar(
+          content: Text(widget.initial != null ? 'Falha ao editar vaga' : 'Falha ao criar vaga'),
+        ),
       );
     }
   }
@@ -98,10 +135,11 @@ class _CriarVagaPageState extends ConsumerState<CriarVagaPage> {
     final role = authState.session?.role;
     final categoriasAsync = ref.watch(categoriasProvider);
     final actionState = ref.watch(vagaActionControllerProvider);
+    final isEdit = widget.initial != null;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Criar vaga'),
+        title: Text(isEdit ? 'Editar vaga' : 'Criar vaga'),
       ),
       body: role == null
           ? Center(
@@ -309,7 +347,7 @@ class _CriarVagaPageState extends ConsumerState<CriarVagaPage> {
                               onPressed: actionState.isLoading ? null : _submit,
                               child: actionState.isLoading
                                   ? const CircularProgressIndicator()
-                                  : const Text('Publicar vaga'),
+                                  : Text(isEdit ? 'Salvar alterações' : 'Publicar vaga'),
                             ),
                           ],
                         ),

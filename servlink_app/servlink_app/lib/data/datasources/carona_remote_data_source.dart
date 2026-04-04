@@ -16,6 +16,31 @@ class CaronaRemoteDataSource {
     await _client.dio.delete('/api/caronas/$id');
   }
 
+  Future<CaronaModel> atualizar({
+    required int id,
+    required String origem,
+    required String destino,
+    required DateTime dataHora,
+    required int vagas,
+    double? valor,
+    required String telefone,
+    String? observacao,
+  }) async {
+    final data = <String, dynamic>{
+      'origem': origem,
+      'destino': destino,
+      'dataHora': dataHora.toIso8601String(),
+      'vagas': vagas,
+      'telefone': telefone,
+    };
+    if (valor != null) data['valor'] = valor;
+    if (observacao != null && observacao.trim().isNotEmpty) {
+      data['observacao'] = observacao.trim();
+    }
+    final res = await _client.dio.put('/api/caronas/$id', data: data);
+    return CaronaModel.fromJson(res.data as Map<String, dynamic>);
+  }
+
   Future<CaronaModel> criar({
     required String origem,
     required String destino,

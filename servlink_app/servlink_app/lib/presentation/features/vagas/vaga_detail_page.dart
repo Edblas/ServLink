@@ -4,6 +4,7 @@ import '../../providers/auth_providers.dart';
 import '../../providers/favoritos_providers.dart';
 import '../../providers/vaga_providers.dart';
 import '../../providers/whatsapp_providers.dart';
+import 'criar_vaga_page.dart';
 import 'candidatos_page.dart';
 
 class VagaDetailPage extends ConsumerWidget {
@@ -32,11 +33,41 @@ class VagaDetailPage extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Detalhe da vaga'),
         actions: [
-          if (role == 'CLIENTE' || role == 'PROFISSIONAL')
+          if ((role == 'CLIENTE' || role == 'PROFISSIONAL') && vagaAsync.hasValue)
             IconButton(
               onPressed: actionState.isLoading
                   ? null
                   : () async {
+                      final vaga = vagaAsync.value!;
+                      final sessionEmail = authState.session?.email.trim().toLowerCase();
+                      final empresaEmail = vaga.empresaEmail.trim().toLowerCase();
+                      final isOwnVaga = sessionEmail != null &&
+                          sessionEmail.isNotEmpty &&
+                          sessionEmail == empresaEmail;
+                      if (!isOwnVaga) return;
+                      await Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => CriarVagaPage(initial: vaga),
+                        ),
+                      );
+                      ref.invalidate(vagasProvider);
+                      ref.invalidate(vagaDetailProvider(vagaId));
+                    },
+              icon: const Icon(Icons.edit_outlined),
+              tooltip: 'Editar vaga',
+            ),
+          if ((role == 'CLIENTE' || role == 'PROFISSIONAL') && vagaAsync.hasValue)
+            IconButton(
+              onPressed: actionState.isLoading
+                  ? null
+                  : () async {
+                      final vaga = vagaAsync.value!;
+                      final sessionEmail = authState.session?.email.trim().toLowerCase();
+                      final empresaEmail = vaga.empresaEmail.trim().toLowerCase();
+                      final isOwnVaga = sessionEmail != null &&
+                          sessionEmail.isNotEmpty &&
+                          sessionEmail == empresaEmail;
+                      if (!isOwnVaga) return;
                       final confirmed = await showDialog<bool>(
                         context: context,
                         builder: (context) {

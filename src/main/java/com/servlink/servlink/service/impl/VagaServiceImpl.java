@@ -141,6 +141,53 @@ public class VagaServiceImpl implements VagaService {
         vagaRepository.save(vaga);
     }
 
+    @Override
+    @Transactional
+    public VagaResponse atualizar(Long id, VagaRequest request) {
+        Cliente cliente = getOrCreateClienteAtual();
+        Vaga vaga = vagaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Vaga não encontrada"));
+        if (vaga.getAtivo() == null || !vaga.getAtivo()) {
+            throw new IllegalArgumentException("Vaga não encontrada");
+        }
+        if (!vaga.getEmpresa().getId().equals(cliente.getId())) {
+            throw new AccessDeniedException("Acesso negado");
+        }
+        if (vaga.getStatus() != VagaStatus.ABERTA) {
+            throw new IllegalArgumentException("Vaga não pode ser editada");
+        }
+        if (vaga.getExpiraEm() != null && vaga.getExpiraEm().isBefore(LocalDateTime.now())) {
+            vaga.setStatus(VagaStatus.EXPIRADA);
+            vagaRepository.save(vaga);
+            throw new IllegalArgumentException("Vaga não pode ser editada");
+        }
+
+        Cidade cidade = cidadeRepository.findById(request.getCidadeId())
+                .orElseThrow(() -> new IllegalArgumentException("Cidade não encontrada"));
+        Categoria categoria = categoriaRepository.findById(request.getCategoriaId())
+                .orElseThrow(() -> new IllegalArgumentException("Categoria não encontrada"));
+
+        VagaTipo tipo = request.getTipo() == null ? vaga.getTipo() : request.getTipo();
+        if (tipo == null) {
+            tipo = VagaTipo.BICO;
+        }
+
+        vaga.setTitulo(request.getTitulo());
+        vaga.setDescricao(request.getDescricao());
+        vaga.setValor(request.getValor());
+        vaga.setCidade(cidade);
+        vaga.setDataTrabalho(request.getDataTrabalho());
+        vaga.setUrgencia(request.getUrgencia() == null ? VagaUrgencia.FLEXIVEL : request.getUrgencia());
+        vaga.setTipo(tipo);
+        vaga.setCategoria(categoria);
+        vaga.setExpiraEm(calculateExpiraEm(request, tipo));
+
+        Vaga salva = vagaRepository.save(vaga);
+        VagaResponse response = vagaMapper.toResponse(salva);
+        response.setCandidaturasCount(candidaturaRepository.countByVagaId(id));
+        return response;
+    }
+
     private void applyCandidaturasCount(List<VagaResponse> responses) {
         if (responses.isEmpty()) return;
         List<Long> ids = responses.stream().map(VagaResponse::getId).toList();

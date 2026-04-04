@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -45,5 +46,13 @@ public class CaronaController {
     public ResponseEntity<Void> apagar(@PathVariable Long id) {
         caronaService.apagar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/api/caronas/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<CaronaResponse> atualizar(
+            @PathVariable Long id,
+            @Valid @RequestBody CaronaRequest request) {
+        return ResponseEntity.ok(caronaService.atualizar(id, request));
     }
 }

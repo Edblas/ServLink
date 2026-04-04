@@ -75,6 +75,40 @@ class VagaActionController extends StateNotifier<AsyncValue<void>> {
     }
   }
 
+  Future<VagaEntity> atualizarVaga({
+    required int id,
+    required String titulo,
+    required String descricao,
+    required double valor,
+    required int cidadeId,
+    required DateTime dataTrabalho,
+    required int categoriaId,
+    required String urgencia,
+    required String tipo,
+    int? diasExpiracao,
+  }) async {
+    state = const AsyncLoading();
+    try {
+      final vaga = await _repository.atualizarVaga(
+        id: id,
+        titulo: titulo,
+        descricao: descricao,
+        valor: valor,
+        cidadeId: cidadeId,
+        dataTrabalho: dataTrabalho,
+        categoriaId: categoriaId,
+        urgencia: urgencia,
+        tipo: tipo,
+        diasExpiracao: diasExpiracao,
+      );
+      state = const AsyncData(null);
+      return vaga;
+    } catch (e, stack) {
+      state = AsyncValue.error(e, stack);
+      rethrow;
+    }
+  }
+
   Future<void> apagarVaga(int vagaId) async {
     state = const AsyncLoading();
     try {

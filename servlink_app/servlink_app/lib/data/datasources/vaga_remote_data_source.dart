@@ -54,6 +54,38 @@ class VagaRemoteDataSource {
     return VagaModel.fromJson(response.data as Map<String, dynamic>);
   }
 
+  Future<VagaModel> atualizarVaga({
+    required int id,
+    required String titulo,
+    required String descricao,
+    required double valor,
+    required int cidadeId,
+    required DateTime dataTrabalho,
+    required int categoriaId,
+    required String urgencia,
+    required String tipo,
+    int? diasExpiracao,
+  }) async {
+    final date = '${dataTrabalho.year.toString().padLeft(4, '0')}-'
+        '${dataTrabalho.month.toString().padLeft(2, '0')}-'
+        '${dataTrabalho.day.toString().padLeft(2, '0')}';
+    final response = await _dio.put(
+      '/api/vagas/$id',
+      data: {
+        'titulo': titulo,
+        'descricao': descricao,
+        'valor_estimado': valor,
+        'cidadeId': cidadeId,
+        'dataTrabalho': date,
+        'urgencia': urgencia,
+        'tipo': tipo,
+        'categoriaId': categoriaId,
+        if (diasExpiracao != null) 'dias_expiracao': diasExpiracao,
+      },
+    );
+    return VagaModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
   Future<void> candidatar(int vagaId) async {
     await _dio.post('/api/vagas/$vagaId/candidatar');
   }

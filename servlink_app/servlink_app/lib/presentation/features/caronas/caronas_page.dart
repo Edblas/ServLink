@@ -73,48 +73,65 @@ class CaronasPage extends ConsumerWidget {
                               ),
                               trailing: !canDelete
                                   ? null
-                                  : IconButton(
-                                      icon: const Icon(Icons.delete_outline),
-                                      onPressed: () async {
-                                        final confirm = await showDialog<bool>(
-                                          context: context,
-                                          builder: (context) {
-                                            return AlertDialog(
-                                              title: const Text('Apagar carona'),
-                                              content: const Text(
-                                                'Deseja apagar esta carona?',
+                                  : Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.edit_outlined),
+                                          onPressed: () async {
+                                            await Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                builder: (_) => CriarCaronaPage(
+                                                  initial: c,
+                                                ),
                                               ),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed: () =>
-                                                      Navigator.of(context).pop(false),
-                                                  child: const Text('Cancelar'),
-                                                ),
-                                                ElevatedButton(
-                                                  onPressed: () =>
-                                                      Navigator.of(context).pop(true),
-                                                  child: const Text('Apagar'),
-                                                ),
-                                              ],
                                             );
+                                            ref.invalidate(caronasProvider);
                                           },
-                                        );
-                                        if (confirm != true) return;
-                                        try {
-                                          await ref
-                                              .read(caronaActionControllerProvider.notifier)
-                                              .apagar(c.id);
-                                          ref.invalidate(caronasProvider);
-                                        } catch (_) {
-                                          if (!context.mounted) return;
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(
-                                              content:
-                                                  Text('Falha ao apagar carona'),
-                                            ),
-                                          );
-                                        }
-                                      },
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.delete_outline),
+                                          onPressed: () async {
+                                            final confirm = await showDialog<bool>(
+                                              context: context,
+                                              builder: (context) {
+                                                return AlertDialog(
+                                                  title: const Text('Apagar carona'),
+                                                  content: const Text(
+                                                    'Deseja apagar esta carona?',
+                                                  ),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.of(context).pop(false),
+                                                      child: const Text('Cancelar'),
+                                                    ),
+                                                    ElevatedButton(
+                                                      onPressed: () =>
+                                                          Navigator.of(context).pop(true),
+                                                      child: const Text('Apagar'),
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            );
+                                            if (confirm != true) return;
+                                            try {
+                                              await ref
+                                                  .read(caronaActionControllerProvider.notifier)
+                                                  .apagar(c.id);
+                                              ref.invalidate(caronasProvider);
+                                            } catch (_) {
+                                              if (!context.mounted) return;
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text('Falha ao apagar carona'),
+                                                ),
+                                              );
+                                            }
+                                          },
+                                        ),
+                                      ],
                                     ),
                             ),
                           );

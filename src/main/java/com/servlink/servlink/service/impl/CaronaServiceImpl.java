@@ -94,4 +94,36 @@ public class CaronaServiceImpl implements CaronaService {
         carona.setAtivo(false);
         caronaRepository.save(carona);
     }
+
+    @Override
+    @Transactional
+    public CaronaResponse atualizar(Long id, CaronaRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("Usuário não autenticado");
+        }
+        Object principal = authentication.getPrincipal();
+        String email = principal instanceof UserDetails ud ? ud.getUsername() : authentication.getName();
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+
+        Carona carona = caronaRepository.findByIdAtivaWithUsuario(id)
+                .orElseThrow(() -> new IllegalArgumentException("Carona não encontrada"));
+
+        if (carona.getUsuario() == null || carona.getUsuario().getId() == null
+                || !carona.getUsuario().getId().equals(usuario.getId())) {
+            throw new AccessDeniedException("Acesso negado");
+        }
+
+        carona.setOrigem(request.getOrigem());
+        carona.setDestino(request.getDestino());
+        carona.setDataHora(request.getDataHora());
+        carona.setVagas(request.getVagas());
+        carona.setValor(request.getValor());
+        carona.setTelefone(request.getTelefone());
+        carona.setObservacao(request.getObservacao());
+
+        Carona salva = caronaRepository.save(carona);
+        return caronaMapper.toResponse(salva);
+    }
 }

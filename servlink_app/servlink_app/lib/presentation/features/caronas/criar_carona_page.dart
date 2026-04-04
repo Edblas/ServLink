@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../domain/entities/carona_entity.dart';
 import '../../providers/carona_providers.dart';
 
 class CriarCaronaPage extends ConsumerStatefulWidget {
-  const CriarCaronaPage({super.key});
+  const CriarCaronaPage({super.key, this.initial});
+
+  final CaronaEntity? initial;
 
   @override
   ConsumerState<CriarCaronaPage> createState() => _CriarCaronaPageState();
@@ -18,6 +21,21 @@ class _CriarCaronaPageState extends ConsumerState<CriarCaronaPage> {
   final _telefoneController = TextEditingController();
   final _obsController = TextEditingController();
   DateTime? _dataHora;
+
+  @override
+  void initState() {
+    super.initState();
+    final initial = widget.initial;
+    if (initial != null) {
+      _origemController.text = initial.origem;
+      _destinoController.text = initial.destino;
+      _vagasController.text = initial.vagas.toString();
+      _valorController.text = initial.valor?.toStringAsFixed(2) ?? '';
+      _telefoneController.text = initial.telefone;
+      _obsController.text = initial.observacao ?? '';
+      _dataHora = initial.dataHora;
+    }
+  }
 
   @override
   void dispose() {
@@ -66,9 +84,10 @@ class _CriarCaronaPageState extends ConsumerState<CriarCaronaPage> {
   @override
   Widget build(BuildContext context) {
     final action = ref.watch(caronaActionControllerProvider);
+    final isEdit = widget.initial != null;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nova carona'),
+        title: Text(isEdit ? 'Editar carona' : 'Nova carona'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -176,23 +195,37 @@ class _CriarCaronaPageState extends ConsumerState<CriarCaronaPage> {
                                     );
                                     return;
                                   }
-                                  await ref
-                                      .read(caronaActionControllerProvider.notifier)
-                                      .criar(
-                                        origem: _origemController.text.trim(),
-                                        destino: _destinoController.text.trim(),
-                                        dataHora: _dataHora!,
-                                        vagas: _parseIntOrNull(_vagasController.text)!,
-                                        valor: _parseDoubleOrNull(_valorController.text),
-                                        telefone: _telefoneController.text.trim(),
-                                        observacao: _obsController.text.trim(),
-                                      );
+                                  final controller = ref.read(
+                                    caronaActionControllerProvider.notifier,
+                                  );
+                                  if (isEdit) {
+                                    await controller.atualizar(
+                                      id: widget.initial!.id,
+                                      origem: _origemController.text.trim(),
+                                      destino: _destinoController.text.trim(),
+                                      dataHora: _dataHora!,
+                                      vagas: _parseIntOrNull(_vagasController.text)!,
+                                      valor: _parseDoubleOrNull(_valorController.text),
+                                      telefone: _telefoneController.text.trim(),
+                                      observacao: _obsController.text.trim(),
+                                    );
+                                  } else {
+                                    await controller.criar(
+                                      origem: _origemController.text.trim(),
+                                      destino: _destinoController.text.trim(),
+                                      dataHora: _dataHora!,
+                                      vagas: _parseIntOrNull(_vagasController.text)!,
+                                      valor: _parseDoubleOrNull(_valorController.text),
+                                      telefone: _telefoneController.text.trim(),
+                                      observacao: _obsController.text.trim(),
+                                    );
+                                  }
                                   if (!context.mounted) return;
                                   Navigator.of(context).pop();
                                 },
                           child: action.isLoading
                               ? const CircularProgressIndicator()
-                              : const Text('Publicar carona'),
+                              : Text(isEdit ? 'Salvar alterações' : 'Publicar carona'),
                         ),
                       ],
                     ),

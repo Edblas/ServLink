@@ -34,6 +34,33 @@ class CaronaActionController extends StateNotifier<CaronaActionState> {
     }
   }
 
+  Future<void> atualizar({
+    required int id,
+    required String origem,
+    required String destino,
+    required DateTime dataHora,
+    required int vagas,
+    double? valor,
+    required String telefone,
+    String? observacao,
+  }) async {
+    state = CaronaActionState(isLoading: true);
+    try {
+      await _repository.atualizar(
+        id: id,
+        origem: origem,
+        destino: destino,
+        dataHora: dataHora,
+        vagas: vagas,
+        valor: valor,
+        telefone: telefone,
+        observacao: observacao,
+      );
+    } finally {
+      state = CaronaActionState(isLoading: false);
+    }
+  }
+
   Future<void> criar({
     required String origem,
     required String destino,

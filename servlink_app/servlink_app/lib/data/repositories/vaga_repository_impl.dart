@@ -47,6 +47,34 @@ class VagaRepositoryImpl implements VagaRepository {
   }
 
   @override
+  Future<VagaEntity> atualizarVaga({
+    required int id,
+    required String titulo,
+    required String descricao,
+    required double valor,
+    required int cidadeId,
+    required DateTime dataTrabalho,
+    required int categoriaId,
+    required String urgencia,
+    required String tipo,
+    int? diasExpiracao,
+  }) async {
+    final result = await _remote.atualizarVaga(
+      id: id,
+      titulo: titulo,
+      descricao: descricao,
+      valor: valor,
+      cidadeId: cidadeId,
+      dataTrabalho: dataTrabalho,
+      categoriaId: categoriaId,
+      urgencia: urgencia,
+      tipo: tipo,
+      diasExpiracao: diasExpiracao,
+    );
+    return result.toEntity();
+  }
+
+  @override
   Future<void> candidatar(int vagaId) {
     return _remote.candidatar(vagaId);
   }

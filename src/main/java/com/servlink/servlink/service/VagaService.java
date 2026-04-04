@@ -15,4 +15,6 @@ public interface VagaService {
     List<VagaResponse> listarPorEmpresa(Long empresaId);
 
     void apagar(Long id);
+
+    VagaResponse atualizar(Long id, VagaRequest request);
 }

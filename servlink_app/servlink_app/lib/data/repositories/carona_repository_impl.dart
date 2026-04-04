@@ -19,6 +19,30 @@ class CaronaRepositoryImpl implements CaronaRepository {
   }
 
   @override
+  Future<CaronaEntity> atualizar({
+    required int id,
+    required String origem,
+    required String destino,
+    required DateTime dataHora,
+    required int vagas,
+    double? valor,
+    required String telefone,
+    String? observacao,
+  }) async {
+    final model = await _remote.atualizar(
+      id: id,
+      origem: origem,
+      destino: destino,
+      dataHora: dataHora,
+      vagas: vagas,
+      valor: valor,
+      telefone: telefone,
+      observacao: observacao,
+    );
+    return model.toEntity();
+  }
+
+  @override
   Future<CaronaEntity> criar({
     required String origem,
     required String destino,

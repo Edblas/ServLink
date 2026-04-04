@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -51,5 +52,11 @@ public class VagaController {
     public ResponseEntity<Void> apagar(@PathVariable Long id) {
         vagaService.apagar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/api/vagas/{id}")
+    @PreAuthorize("hasAnyRole('CLIENTE','PROFISSIONAL')")
+    public ResponseEntity<VagaResponse> atualizar(@PathVariable Long id, @Valid @RequestBody VagaRequest request) {
+        return ResponseEntity.ok(vagaService.atualizar(id, request));
     }
 }
