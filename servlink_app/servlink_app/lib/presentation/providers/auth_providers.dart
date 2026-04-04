@@ -152,6 +152,7 @@ class AuthController extends StateNotifier<AuthState> {
     state = state.copyWith(
       session: AuthSession(
         accessToken: current.accessToken,
+        userId: current.userId,
         nome: nome ?? current.nome,
         email: email ?? current.email,
         role: role ?? current.role,

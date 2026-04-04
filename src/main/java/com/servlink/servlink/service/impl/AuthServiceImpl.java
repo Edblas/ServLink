@@ -125,6 +125,7 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtTokenProvider.generateToken(saved);
 
         return LoginResponse.builder()
+                .id(saved.getId())
                 .accessToken(token)
                 .tokenType("Bearer")
                 .nome(saved.getNome())
@@ -147,6 +148,7 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtTokenProvider.generateToken(usuario);
 
         return LoginResponse.builder()
+                .id(usuario.getId())
                 .accessToken(token)
                 .tokenType("Bearer")
                 .nome(usuario.getNome())
@@ -213,7 +215,7 @@ public class AuthServiceImpl implements AuthService {
         String email = authentication.getName();
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalStateException("Usuário não autenticado"));
-        return new AuthMeResponse(usuario.getNome(), usuario.getEmail(), usuario.getRole());
+        return new AuthMeResponse(usuario.getId(), usuario.getNome(), usuario.getEmail(), usuario.getRole());
     }
 
     private String normalizeEmail(String email) {

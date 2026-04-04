@@ -14,6 +14,11 @@ class CaronaRepositoryImpl implements CaronaRepository {
   }
 
   @override
+  Future<void> apagar(int id) {
+    return _remote.apagar(id);
+  }
+
+  @override
   Future<CaronaEntity> criar({
     required String origem,
     required String destino,

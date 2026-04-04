@@ -88,17 +88,20 @@ class ResetPasswordRequestModel {
 
 class AuthMeResponseModel {
   AuthMeResponseModel({
+    required this.id,
     required this.nome,
     required this.email,
     required this.role,
   });
 
+  final int id;
   final String nome;
   final String email;
   final String role;
 
   factory AuthMeResponseModel.fromJson(Map<String, dynamic> json) {
     return AuthMeResponseModel(
+      id: (json['id'] as num).toInt(),
       nome: json['nome'] as String,
       email: json['email'] as String,
       role: json['role'] as String,
@@ -108,6 +111,7 @@ class AuthMeResponseModel {
 
 class LoginResponseModel {
   LoginResponseModel({
+    required this.id,
     required this.accessToken,
     required this.tokenType,
     required this.nome,
@@ -115,6 +119,7 @@ class LoginResponseModel {
     required this.role,
   });
 
+  final int id;
   final String accessToken;
   final String tokenType;
   final String nome;
@@ -123,6 +128,7 @@ class LoginResponseModel {
 
   factory LoginResponseModel.fromJson(Map<String, dynamic> json) {
     return LoginResponseModel(
+      id: (json['id'] as num).toInt(),
       accessToken: json['accessToken'] as String,
       tokenType: json['tokenType'] as String,
       nome: json['nome'] as String,

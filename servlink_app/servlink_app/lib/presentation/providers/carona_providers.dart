@@ -25,6 +25,15 @@ class CaronaActionController extends StateNotifier<CaronaActionState> {
 
   final CaronaRepository _repository;
 
+  Future<void> apagar(int id) async {
+    state = CaronaActionState(isLoading: true);
+    try {
+      await _repository.apagar(id);
+    } finally {
+      state = CaronaActionState(isLoading: false);
+    }
+  }
+
   Future<void> criar({
     required String origem,
     required String destino,

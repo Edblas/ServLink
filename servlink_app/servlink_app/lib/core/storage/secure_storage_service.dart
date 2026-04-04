@@ -9,6 +9,7 @@ class SecureStorageService {
   final FlutterSecureStorage _storage;
 
   static const String _accessTokenKey = 'access_token';
+  static const String _sessionUserIdKey = 'session_user_id';
   static const String _sessionNomeKey = 'session_nome';
   static const String _sessionEmailKey = 'session_email';
   static const String _sessionRoleKey = 'session_role';
@@ -28,24 +29,29 @@ class SecureStorageService {
   }
 
   Future<void> saveSession({
+    required int userId,
     required String nome,
     required String email,
     required String role,
   }) async {
+    await _storage.write(key: _sessionUserIdKey, value: userId.toString());
     await _storage.write(key: _sessionNomeKey, value: nome);
     await _storage.write(key: _sessionEmailKey, value: email);
     await _storage.write(key: _sessionRoleKey, value: role);
   }
 
   Future<Map<String, String>?> getSession() async {
+    final userId = await _storage.read(key: _sessionUserIdKey);
     final nome = await _storage.read(key: _sessionNomeKey);
     final email = await _storage.read(key: _sessionEmailKey);
     final role = await _storage.read(key: _sessionRoleKey);
-    if (nome == null || email == null || role == null) return null;
+    if (userId == null || nome == null || email == null || role == null) return null;
+    if (userId.trim().isEmpty) return null;
     if (nome.trim().isEmpty || email.trim().isEmpty || role.trim().isEmpty) {
       return null;
     }
     return {
+      'userId': userId,
       'nome': nome,
       'email': email,
       'role': role,
@@ -53,6 +59,7 @@ class SecureStorageService {
   }
 
   Future<void> clearSession() async {
+    await _storage.delete(key: _sessionUserIdKey);
     await _storage.delete(key: _sessionNomeKey);
     await _storage.delete(key: _sessionEmailKey);
     await _storage.delete(key: _sessionRoleKey);

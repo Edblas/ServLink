@@ -11,6 +11,7 @@ import com.servlink.servlink.service.CaronaService;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -68,5 +69,29 @@ public class CaronaServiceImpl implements CaronaService {
         Carona carona = caronaRepository.findByIdAtivaWithUsuario(id)
                 .orElseThrow(() -> new IllegalArgumentException("Carona não encontrada"));
         return caronaMapper.toResponse(carona);
+    }
+
+    @Override
+    @Transactional
+    public void apagar(Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("Usuário não autenticado");
+        }
+        Object principal = authentication.getPrincipal();
+        String email = principal instanceof UserDetails ud ? ud.getUsername() : authentication.getName();
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+
+        Carona carona = caronaRepository.findByIdAtivaWithUsuario(id)
+                .orElseThrow(() -> new IllegalArgumentException("Carona não encontrada"));
+
+        if (carona.getUsuario() == null || carona.getUsuario().getId() == null
+                || !carona.getUsuario().getId().equals(usuario.getId())) {
+            throw new AccessDeniedException("Acesso negado");
+        }
+
+        carona.setAtivo(false);
+        caronaRepository.save(carona);
     }
 }

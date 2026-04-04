@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,5 +38,12 @@ public class CaronaController {
     @GetMapping("/api/caronas/{id}")
     public ResponseEntity<CaronaResponse> obter(@PathVariable Long id) {
         return ResponseEntity.ok(caronaService.obter(id));
+    }
+
+    @DeleteMapping("/api/caronas/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> apagar(@PathVariable Long id) {
+        caronaService.apagar(id);
+        return ResponseEntity.noContent().build();
     }
 }

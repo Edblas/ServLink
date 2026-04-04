@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
+import '../../providers/auth_providers.dart';
 import '../../providers/carona_providers.dart';
 import 'criar_carona_page.dart';
 
@@ -52,6 +53,10 @@ class CaronasPage extends ConsumerWidget {
                         itemCount: caronas.length,
                         itemBuilder: (context, index) {
                           final c = caronas[index];
+                          final sessionUserId =
+                              ref.read(authControllerProvider).session?.userId;
+                          final canDelete =
+                              sessionUserId != null && sessionUserId == c.usuarioId;
                           final date = '${c.dataHora.day.toString().padLeft(2, '0')}/'
                               '${c.dataHora.month.toString().padLeft(2, '0')}/'
                               '${c.dataHora.year} ${c.dataHora.hour.toString().padLeft(2, '0')}:'
@@ -66,6 +71,51 @@ class CaronasPage extends ConsumerWidget {
                               subtitle: Text(
                                 '$date • ${c.vagas} vagas$price • ${c.usuarioNome}',
                               ),
+                              trailing: !canDelete
+                                  ? null
+                                  : IconButton(
+                                      icon: const Icon(Icons.delete_outline),
+                                      onPressed: () async {
+                                        final confirm = await showDialog<bool>(
+                                          context: context,
+                                          builder: (context) {
+                                            return AlertDialog(
+                                              title: const Text('Apagar carona'),
+                                              content: const Text(
+                                                'Deseja apagar esta carona?',
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () =>
+                                                      Navigator.of(context).pop(false),
+                                                  child: const Text('Cancelar'),
+                                                ),
+                                                ElevatedButton(
+                                                  onPressed: () =>
+                                                      Navigator.of(context).pop(true),
+                                                  child: const Text('Apagar'),
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        );
+                                        if (confirm != true) return;
+                                        try {
+                                          await ref
+                                              .read(caronaActionControllerProvider.notifier)
+                                              .apagar(c.id);
+                                          ref.invalidate(caronasProvider);
+                                        } catch (_) {
+                                          if (!context.mounted) return;
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(
+                                              content:
+                                                  Text('Falha ao apagar carona'),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                    ),
                             ),
                           );
                         },

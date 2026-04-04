@@ -23,6 +23,7 @@ class AuthRepositoryImpl implements AuthRepository {
     );
     await _storage.saveAccessToken(response.accessToken);
     await _storage.saveSession(
+      userId: response.id,
       nome: response.nome,
       email: response.email,
       role: response.role,
@@ -30,6 +31,7 @@ class AuthRepositoryImpl implements AuthRepository {
     _client.setAccessToken(response.accessToken);
     return AuthSession(
       accessToken: response.accessToken,
+      userId: response.id,
       nome: response.nome,
       email: response.email,
       role: response.role,
@@ -65,6 +67,7 @@ class AuthRepositoryImpl implements AuthRepository {
     );
     await _storage.saveAccessToken(response.accessToken);
     await _storage.saveSession(
+      userId: response.id,
       nome: response.nome,
       email: response.email,
       role: response.role,
@@ -72,6 +75,7 @@ class AuthRepositoryImpl implements AuthRepository {
     _client.setAccessToken(response.accessToken);
     return AuthSession(
       accessToken: response.accessToken,
+      userId: response.id,
       nome: response.nome,
       email: response.email,
       role: response.role,
@@ -109,17 +113,21 @@ class AuthRepositoryImpl implements AuthRepository {
       _client.setAccessToken(token);
       final cached = await _storage.getSession();
       if (cached != null) {
+        final userId = int.tryParse(cached['userId'] ?? '');
+        if (userId == null) return null;
         return AuthSession(
           accessToken: token,
+          userId: userId,
           nome: cached['nome'] ?? '',
           email: cached['email'] ?? '',
           role: cached['role'] ?? '',
         );
       }
       final me = await _remote.me();
-      await _storage.saveSession(nome: me.nome, email: me.email, role: me.role);
+      await _storage.saveSession(userId: me.id, nome: me.nome, email: me.email, role: me.role);
       return AuthSession(
         accessToken: token,
+        userId: me.id,
         nome: me.nome,
         email: me.email,
         role: me.role,

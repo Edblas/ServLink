@@ -8,4 +8,5 @@ public interface CaronaService {
     CaronaResponse criar(CaronaRequest request);
     List<CaronaResponse> listar();
     CaronaResponse obter(Long id);
+    void apagar(Long id);
 }

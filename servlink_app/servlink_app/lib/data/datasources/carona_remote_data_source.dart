@@ -12,6 +12,10 @@ class CaronaRemoteDataSource {
     return list.map((e) => CaronaModel.fromJson(e as Map<String, dynamic>)).toList();
     }
 
+  Future<void> apagar(int id) async {
+    await _client.dio.delete('/api/caronas/$id');
+  }
+
   Future<CaronaModel> criar({
     required String origem,
     required String destino,
